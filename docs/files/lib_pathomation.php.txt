@@ -1,18 +1,13 @@
 <?php
-class PMA {
-	const version = "2.0.0.2";
+/**
+The file contains classes that wrap around various components of Pathomation's software platform for digital microscopy
+More information about Pathomation's free software offering can be found at http://free.pathomation.com
+Commercial applications and tools can be found at http://www.pathomation.com
+*/
 
-	public static function ends_with($wholestring, $suffix)
-	{
-		return substr($wholestring, - strlen($suffix)) == $suffix ? true : false;
-	}
-
-	public static function starts_with($wholestring, $prefix)
-	{
-		return substr($wholestring, 0, strlen($prefix)) == $prefix ? true : false;
-	}
-}
-
+/**
+Class that wraps around the free PMA.core.lite (the server component of PMA.start), as well as its commercial variant; the PMA.core product
+*/
 class Core {
 	# internal module helper variables and functions
 	private static $_pma_sessions = [];
@@ -22,7 +17,7 @@ class Core {
 	private static $_pma_usecachewhenretrievingtiles = true;
 	private static $_pma_amount_of_data_downloaded = array("SDK.PHP" => 0);
 
-
+	/** Internal use only */
 	private static function _pma_session_id($sessionID = null)
 	{
 		if ($sessionID === null) {
@@ -34,6 +29,7 @@ class Core {
 		}
 	}
 
+	/** Internal use only */
 	private static function _pma_first_session_id()
 	{
 		// do we have any stored sessions from earlier login events?
@@ -55,6 +51,7 @@ class Core {
 		}
 	}
             
+	/** Internal use only */
 	private static function _pma_url($sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
@@ -78,6 +75,7 @@ class Core {
 		}
 	}
             
+	/** Internal use only */
 	private static function _pma_is_lite($pmacoreURL = null)
 	{
 		if ($pmacoreURL == null) {
@@ -108,6 +106,7 @@ class Core {
 		return $json == 1; //return str(dom.firstChild.firstChild.nodeValue).lower() == "true";
 	}
 
+	/** Internal use only */
 	private static function _pma_api_url($sessionID = None, $xml = false)
 	{
 		// let's get the base URL first for the specified session
@@ -120,6 +119,7 @@ class Core {
 		return self::_pma_join($url, "api/json/");
 	}
     
+	/** Internal use only */
 	private static function _pma_join($dir1, $dir2)
 	{
 		$dir1 = str_replace("\\", "/", $dir1);
@@ -133,6 +133,7 @@ class Core {
 		return join("/", array($dir1, $dir2));
 	}
     
+	/** Internal use only */
 	private static function _pma_q($arg)
 	{
 		if ($arg == null) {
@@ -145,7 +146,9 @@ class Core {
 	# end internal module helper variables and functions
 
 
-	// See if there's a PMA.core.lite or PMA.core instance running at pmacoreURL
+	/**
+	See if there's a PMA.core.lite or PMA.core instance running at $pmacoreURL
+	*/
 	public static function isLite($pmacoreURL = null)
 	{
 		global $_pma_pmacoreliteURL;
@@ -155,7 +158,9 @@ class Core {
 		return self::_pma_is_lite($pmacoreURL);
 	}
 
-	// Get version info from PMA.core instance running at pmacoreURL
+	/**
+	Get version info from PMA.core instance running at $pmacoreURL
+	*/
 	public static function getVersionInfo($pmacoreURL = null)
 	{
 		global $_pma_pmacoreliteURL;
@@ -180,7 +185,9 @@ class Core {
 		return $json;
 	}
 
-	// Attempt to connect to PMA.core instance; success results in a SessionID
+	/**
+	Attempt to connect to PMA.core instance; success results in a SessionID
+	*/
 	public static function connect($pmacoreURL = null, $pmacoreUsername = "", $pmacorePassword = "")
 	{
 		if ($pmacoreURL == null) {
@@ -232,7 +239,9 @@ class Core {
 		return $sessionID;
 	}
 
-	// Attempt to connect to PMA.core instance; success results in a SessionID
+	/**
+	Attempt to connect to PMA.core instance; success results in a SessionID
+	*/
 	public static function disconnect($sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
@@ -257,7 +266,9 @@ class Core {
 		return true;
 	}
 
-	// Return an array of root-directories available to sessionID
+	/**
+	Return an array of root-directories available to $sessionID
+	*/
 	public static function getRootDirectories($sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
@@ -274,7 +285,9 @@ class Core {
 		return $json;
 	}
 
-	// Return an array of sub-directories available to sessionID in the startDir directory
+	/**
+	Return an array of sub-directories available to $sessionID in the $startDir directory
+	*/
 	public static function getDirectories($startDir, $sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
@@ -294,6 +307,9 @@ class Core {
 		return $json;
 	}
 
+	/**
+	Look for the first directory in a directory hierarchy that starts at $startDir that has at least one actual slide in it
+	*/
 	public static function get_first_non_empty_directory($startDir = null, $sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
@@ -325,7 +341,9 @@ class Core {
 		return null;
 	}
 
-	// Return an array of slides available to sessionID in the startDir directory
+	/**
+	Return an array of slides available to sessionID in the startDir directory
+	*/
 	public static function getSlides($startDir, $sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
@@ -350,7 +368,9 @@ class Core {
 		return $slides;
 	}
 
-	// Get the UID for a specific slide 
+	/**
+	Get the UID (unique identifier) for a specific slide 
+	*/
 	public static function getUID($slideRef, $sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
@@ -373,3 +393,21 @@ class Core {
 	}	
 
 }
+
+/**
+Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
+*/
+class PMA {
+	const version = "2.0.0.2";
+
+	public static function ends_with($wholestring, $suffix)
+	{
+		return substr($wholestring, - strlen($suffix)) == $suffix ? true : false;
+	}
+
+	public static function starts_with($wholestring, $prefix)
+	{
+		return substr($wholestring, 0, strlen($prefix)) == $prefix ? true : false;
+	}
+}
+
