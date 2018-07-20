@@ -395,10 +395,74 @@ class Core {
 }
 
 /**
+Wrapper around PMA.UI JavaScript framework
+*/
+class UI {
+	public static $_pma_ui_javascript_path = "pma.ui/";
+	private static $_pma_ui_framework_embedded = false;
+	private static $_pma_ui_viewport_count = 0;
+	private static $_pma_ui_gallery_count = 0;
+	
+	/** internal helper function to prevent PMA.UI framework from being loaded more than once */
+	private static function _pma_embed_pma_ui_framework() {
+		if (!self::$_pma_ui_framework_embedded) {
+			if (!pma::ends_with(self::$_pma_ui_javascript_path, "/")) {
+				self::$_pma_ui_javascript_path .= "/";
+			}
+			echo "<!-- include PMA.UI script & css -->\n";
+			echo "<script src='".self::$_pma_ui_javascript_path."pma.ui.view.min.js' type='text/javascript'></script>\n";
+			echo "<link href='".self::$_pma_ui_javascript_path."pma.ui.view.min.css' type='text/css' rel='stylesheet'>\n";
+			echo "<!-- include PMA.UI.components script & css -->\n";
+			echo "<script src='".self::$_pma_ui_javascript_path."PMA.UI.components.all.min.js' type='text/javascript'></script>\n";
+			echo "<link href='".self::$_pma_ui_javascript_path."PMA.UI.components.all.min.css' type='text/css' rel='stylesheet'>\n";
+			self::$_pma_ui_framework_embedded = true;
+		}
+	}	
+	
+	/** output HTML code to display a single slide through a PMA.UI viewport control
+		authentication against PMA.core happens through a pre-established SessionID */
+	public static function embed_slide_by_sessionID($server, $slideRef, $sessionID, $options = null) {
+		self::_pma_embed_pma_ui_framework();
+		self::$_pma_ui_viewport_count++;
+		$div_id = "pma_viewport".self::$_pma_ui_viewport_count;
+		?>
+		<div id="<?php echo $div_id; ?>"></div>
+		<script type="text/javascript">
+			// initialize the viewport
+			var viewport = new PMA.UI.View.Viewport({
+				caller: "PMA.PHP UI class",
+				element: "#<?php echo $div_id; ?>",
+				image: "<?php echo $slideRef;?>",
+				serverUrls: ["<?php echo $server;?>"],
+				sessionID: "<?php echo $sessionID;?>",
+				},
+				function () {
+					console.log("Success!");
+				},
+				function () {
+					console.log("Error! Check the console for details.");
+				});
+		</script>
+		<?
+		return $div_id;
+	}
+
+	/** output HTML code to display a single slide through a PMA.UI viewport control 
+		authentication against PMA.core happens in real-time through the provided $username and $password credentials
+		Note that the username and password and NOT rendered in the HTML output (authentication happens in PHP on the server-side).
+	*/
+	public static function embed_slide_by_username($server, $slideRef, $username, $password = "", $options = null) {
+		$session = Core::connect($server, $username, $password);
+		return self::embed_slide_by_sessionID($server, $slideRef, $session, $options);
+	}
+
+}
+
+/**
 Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
 */
 class PMA {
-	const version = "2.0.0.2";
+	const version = "2.0.0.4";
 
 	public static function ends_with($wholestring, $suffix)
 	{
@@ -410,3 +474,4 @@ class PMA {
 		return substr($wholestring, 0, strlen($prefix)) == $prefix ? true : false;
 	}
 }
+
