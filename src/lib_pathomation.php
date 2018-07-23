@@ -54,7 +54,7 @@ class Core {
 	}
             
 	/** Internal use only */
-	private static function _pma_url($sessionID = null)
+	public static function _pma_url($sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
 		
@@ -456,6 +456,39 @@ class UI {
 	public static function embed_slide_by_username($server, $slideRef, $username, $password = "", $options = null) {
 		$session = Core::connect($server, $username, $password);
 		return self::embed_slide_by_sessionID($server, $slideRef, $session, $options);
+	}
+
+}
+
+/**
+CoreAdmin class. Interface to PMA.core for administrative operations. Does NOT apply to PMA.start / PMA.core.lite
+*/
+class CoreAdmin {
+	
+	/**
+	Define a new user in PMA.core
+	*/
+	public static function AddUser($ASessionID, $login, $firstName, $lastName, $email, $password, $canAnnotate = false, $isAdmin = false, $isSuspended = false) {
+		$url = Core::_pma_url($ASessionID)."admin?singleWsdl";
+		print($url);
+		$client = new \SoapClient($url);
+
+		$create_user = $client->CreateUser(
+            array(
+                "sessionID" => $ASessionID,
+                "user" => array(
+                        "Administrator" => $isAdmin,
+                        "CanAnnotate"   => $canAnnotate,
+                        "Email"         => $email,
+                        "FirstName"     => $firstName,
+                        "LastName"      => $lastName,
+                        "Local"         => true,
+                        "Login"         => $login,
+                        "Password"      => $password,
+                        "Suspended"     => $isSuspended,
+                ),
+			)
+		);		
 	}
 
 }
