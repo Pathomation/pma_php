@@ -114,7 +114,7 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a href="../reports/errors.html">
-                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">57</span>
+                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">69</span>
                                 </a>
                             </li>
                             <li>
@@ -144,19 +144,19 @@
                                 <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-640098431"></a>
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-777210704"></a>
                                 <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
             </div>
-            <div id="namespace-640098431" class="accordion-body collapse in">
+            <div id="namespace-777210704" class="accordion-body collapse in">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1639827030"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1851809035"></a>
                                 <a href="../namespaces/Pathomation.html" style="margin-left: 30px; padding-left: 0">Pathomation</a>
             </div>
-            <div id="namespace-1639827030" class="accordion-body collapse ">
+            <div id="namespace-1851809035" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -220,6 +220,12 @@
                                                                     <a href="../classes/Pathomation.Core.html#method_getFirstNonEmptyDirectory" class="">getFirstNonEmptyDirectory()</a><br />
                                                                     <a href="../classes/Pathomation.Core.html#method_getSlides" class="">getSlides()</a><br />
                                                                     <a href="../classes/Pathomation.Core.html#method_getUID" class="">getUID()</a><br />
+                                                                    <a href="../classes/Pathomation.Core.html#method_getBarcodeUrl" class="">getBarcodeUrl()</a><br />
+                                                                    <a href="../classes/Pathomation.Core.html#method_getBarcodeImage" class="">getBarcodeImage()</a><br />
+                                                                    <a href="../classes/Pathomation.Core.html#method_getLabelUrl" class="">getLabelUrl()</a><br />
+                                                                    <a href="../classes/Pathomation.Core.html#method_getLabelImage" class="">getLabelImage()</a><br />
+                                                                    <a href="../classes/Pathomation.Core.html#method_getThumbnailUrl" class="">getThumbnailUrl()</a><br />
+                                                                    <a href="../classes/Pathomation.Core.html#method_getThumbnailImage" class="">getThumbnailImage()</a><br />
                                                             </section>
                             <section class="span4">
                                                                     <em>No public properties found</em>
@@ -246,7 +252,6 @@
                                                                     <a href="../classes/Pathomation.Core.html#method__pma_is_lite" class="">_pma_is_lite()</a><br />
                                                                     <a href="../classes/Pathomation.Core.html#method__pma_api_url" class="">_pma_api_url()</a><br />
                                                                     <a href="../classes/Pathomation.Core.html#method__pma_join" class="">_pma_join()</a><br />
-                                                                    <a href="../classes/Pathomation.Core.html#method__pma_q" class="">_pma_q()</a><br />
                                                             </section>
                             <section class="span4">
                                                                     <a href="../classes/Pathomation.Core.html#property__pma_sessions" class="">$_pma_sessions</a><br />
@@ -827,6 +832,246 @@
         </aside>
     </div>
 
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getBarcodeUrl" name="method_getBarcodeUrl" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getBarcodeUrl()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getBarcodeUrl(  <span class="argument">$slideRef</span>,   <span class="argument">$sessionID = null</span>) </pre>
+                <p><em>Get the URL that points to the barcode (alias for &quot;label&quot;) for a slide</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$slideRef </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$sessionID </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getBarcodeImage" name="method_getBarcodeImage" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getBarcodeImage()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getBarcodeImage(  <span class="argument">$slideRef</span>,   <span class="argument">$sessionID = null</span>) </pre>
+                <p><em>Get the barcode (alias for &quot;label&quot;) image for a slide</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$slideRef </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$sessionID </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getLabelUrl" name="method_getLabelUrl" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getLabelUrl()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getLabelUrl(  <span class="argument">$slideRef</span>,   <span class="argument">$sessionID = None</span>) </pre>
+                <p><em>Get the URL that points to the label for a slide</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$slideRef </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$sessionID </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getLabelImage" name="method_getLabelImage" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getLabelImage()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getLabelImage(  <span class="argument">$slideRef</span>,   <span class="argument">$sessionID = null</span>) </pre>
+                <p><em>Get the label image for a slide</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$slideRef </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$sessionID </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getThumbnailUrl" name="method_getThumbnailUrl" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getThumbnailUrl()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getThumbnailUrl(  <span class="argument">$slideRef</span>,   <span class="argument">$sessionID = null</span>) </pre>
+                <p><em>Get the URL that points to the thumbnail for a slide</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$slideRef </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$sessionID </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getThumbnailImage" name="method_getThumbnailImage" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getThumbnailImage()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getThumbnailImage(  <span class="argument">$slideRef</span>,   <span class="argument">$sessionID = null</span>) </pre>
+                <p><em>Get the thumbnail image for a slide</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$slideRef </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$sessionID </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
                                                                     <div class="row-fluid">
         <div class="span8 content class">
             <a id="method__pma_session_id" name="method__pma_session_id" class="anchor"></a>
@@ -1004,41 +1249,6 @@
         </aside>
     </div>
 
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method__pma_q" name="method__pma_q" class="anchor"></a>
-            <article class="method">
-                <h3 class="private ">_pma_q()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">_pma_q(  <span class="argument">$arg</span>) </pre>
-                <p><em>Internal use only</em></p>
-                
-
-                                    <h4>Parameters</h4>
-                    <table class="table table-condensed table-hover">
-                                                    <tr>
-                                <td></td>
-                                <td>$arg </td>
-                                <td></td>
-                            </tr>
-                                            </table>
-                
-                
-                				
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                            <span class="label label-info">static</span>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
                                     </div>
     </section>
 
@@ -1089,7 +1299,7 @@
                 <section class="span10 offset1">
                     <hr />
                     Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
-                    on July 23rd, 2018 at 12:15.
+                    on July 28th, 2018 at 17:38.
                 </section>
             </section>
         </section>

@@ -135,16 +135,6 @@ class Core {
 		return join("/", array($dir1, $dir2));
 	}
     
-	/** Internal use only */
-	private static function _pma_q($arg)
-	{
-		if ($arg == null) {
-			return "";
-		} else {
-			return urlencode($arg);
-		}
-	}
-    
 	# end internal module helper variables and functions
 
 
@@ -209,10 +199,10 @@ class Core {
 		// why? Because_pma_api_url() takes session information into account (which we don't have yet)
 		$url = self::_pma_join($pmacoreURL, "api/json/authenticate?caller=SDK.PHP");
 		if ($pmacoreUsername != "") {
-			$url .= "&username=".self::_pma_q($pmacoreUsername);
+			$url .= "&username=".PMA::_pma_q($pmacoreUsername);
 		}
 		if ($pmacorePassword != "") {
-			$url .= "&password=".self::_pma_q($pmacorePassword);
+			$url .= "&password=".PMA::_pma_q($pmacorePassword);
 		}
 		
 		try {
@@ -251,7 +241,7 @@ class Core {
 			return false;
 		}
 		
-		$url = self::_pma_api_url($sessionID)."DeAuthenticate?sessionID=".self::_pma_q($sessionID);
+		$url = self::_pma_api_url($sessionID)."DeAuthenticate?sessionID=".PMA::_pma_q($sessionID);
 		try {
 			$contents = @file_get_contents($url);
 		} catch (Exception $ex) {
@@ -274,7 +264,7 @@ class Core {
 	public static function getRootDirectories($sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
-		$url = self::_pma_api_url($sessionID)."GetRootDirectories?sessionID=".self::_pma_q($sessionID);
+		$url = self::_pma_api_url($sessionID)."GetRootDirectories?sessionID=".PMA::_pma_q($sessionID);
 		$contents = file_get_contents($url);
 
 		self::$_pma_amount_of_data_downloaded[$sessionID] += strlen($contents);
@@ -293,7 +283,7 @@ class Core {
 	public static function getDirectories($startDir, $sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
-		$url = self::_pma_api_url($sessionID)."GetDirectories?sessionID=".self::_pma_q($sessionID)."&path=".self::_pma_q($startDir);
+		$url = self::_pma_api_url($sessionID)."GetDirectories?sessionID=".PMA::_pma_q($sessionID)."&path=".PMA::_pma_q($startDir);
 		$contents = file_get_contents($url);
 
 		$json = json_decode($contents, true);
@@ -325,15 +315,15 @@ class Core {
 			return $startDir;
 		} else {
 			if (startDir == "/") {
-				foreach (self::get_root_directories($sessionID) as $dir) {
-					$nonEmtptyDir = self::get_first_non_empty_directory($dir, $sessionID);
+				foreach (self::getRootDirectories($sessionID) as $dir) {
+					$nonEmtptyDir = self::getFirstNonEmptyDirectory($dir, $sessionID);
 					if ($nonEmtptyDir !== null) {
 						return $nonEmtptyDir;
 					}
 				}
 			} else {
-				foreach (self::get_directories($startDir, $sessionID) as $dir) {
-					$nonEmtptyDir = self::get_first_non_empty_directory($dir, $sessionID);
+				foreach (self::getDirectories($startDir, $sessionID) as $dir) {
+					$nonEmtptyDir = self::getFirstNonEmptyDirectory($dir, $sessionID);
 					if ($nonEmtptyDir !== null) {
 						return $nonEmtptyDir;
 					}
@@ -349,10 +339,10 @@ class Core {
 	public static function getSlides($startDir, $sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
-		if (starts_with($startDir, "/")) {
+		if (pma::starts_with($startDir, "/")) {
 			$startDir = substr($startDir, 1);
 		}
-		$url = self::_pma_api_url($sessionID)."GetFiles?sessionID=".self::_pma_q($sessionID)."&path=".self::_pma_q($startDir);
+		$url = self::_pma_api_url($sessionID)."GetFiles?sessionID=".PMA::_pma_q($sessionID)."&path=".PMA::_pma_q($startDir);
 		$contents = file_get_contents($url);
 
 		$json = json_decode($contents, true);
@@ -376,7 +366,7 @@ class Core {
 	public static function getUID($slideRef, $sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
-		$url = self::_pma_api_url($sessionID)."GetUID?sessionID=".self::_pma_q($sessionID)."&path=".self::_pma_q($slideRef);
+		$url = self::_pma_api_url($sessionID)."GetUID?sessionID=".PMA::_pma_q($sessionID)."&path=".PMA::_pma_q($slideRef);
 		$contents = file_get_contents($url);
 
 		$json = json_decode($contents, true);
@@ -394,6 +384,65 @@ class Core {
 		return $uid;
 	}	
 
+	/**
+	Get the URL that points to the barcode (alias for "label") for a slide
+	*/
+	public static function getBarcodeUrl($slideRef, $sessionID = null) {		
+		$sessionID = Core::_pma_session_id($sessionID);
+		$url = (Core::_pma_url($sessionID)."barcode"
+			."?SessionID=".pma::_pma_q($sessionID)
+			."&pathOrUid=".pma::_pma_q($slideRef));
+		return $url;
+	}
+
+	/**
+	Get the barcode (alias for "label") image for a slide
+	*/
+	public static function getBarcodeImage($slideRef, $sessionID = null) {
+		$sessionID = Core::_pma_session_id($sessionID);
+		$img = imagecreatefromjpeg(self::getBarcodeUrl($slideRef, $sessionID));
+		self::$_pma_amount_of_data_downloaded[$sessionID] += strlen(serialize($img));
+		return $img;
+	}
+
+	/**
+	Get the URL that points to the label for a slide
+	*/
+	public static function getLabelUrl($slideRef, $sessionID = None) {
+		
+		return getBarcodeUrl($slideRef, $sessionID);
+	}
+	
+	/**
+	Get the label image for a slide
+	*/
+	public static function getLabelImage($slideRef, $sessionID = null) {
+		$sessionID = pma::_pma_session_id($sessionID);
+		$img = imagecreatefromjpeg(self::getLabelUrl($slideRef, $sessionID));
+		self::$_pma_amount_of_data_downloaded[$sessionID] += strlen(serialize($img));
+		return $img;
+	}
+	
+	/**
+	Get the URL that points to the thumbnail for a slide
+	*/
+	public static function getThumbnailUrl($slideRef, $sessionID = null) {
+		$sessionID = Core::_pma_session_id($sessionID);
+		$url = (Core::_pma_url($sessionID) . "thumbnail"
+			. "?SessionID=" . pma::_pma_q($sessionID)
+			. "&pathOrUid=" . pma::_pma_q($slideRef));
+		return $url;
+	}
+
+	/**
+	Get the thumbnail image for a slide
+	*/
+	public static function getThumbnailImage($slideRef, $sessionID = null) {		
+		$sessionID = Core::_pma_session_id($sessionID);
+		$img = imagecreatefromjpeg(self::getThumbnailUrl($slideRef, $sessionID));
+		self::$_pma_amount_of_data_downloaded[sessionID] += strlen(serialize($img));
+		return $img;
+	}		
 }
 
 /**
@@ -508,5 +557,15 @@ class PMA {
 	{
 		return substr($wholestring, 0, strlen($prefix)) == $prefix ? true : false;
 	}
+
+	/** Internal use only */
+	public static function _pma_q($arg)
+	{
+		if ($arg == null) {
+			return "";
+		} else {
+			return urlencode($arg);
+		}
+	}	
 }
 
