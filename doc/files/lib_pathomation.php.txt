@@ -15,7 +15,7 @@ class Core {
 	private static $_pma_sessions = [];
 	private static $_pma_slideinfos = [];
 	private static $_pma_pmacoreliteURL = "http://localhost:54001/";
-	private static $_pma_pmacoreliteSessionID = "SDK.PHP";
+	public static $_pma_pmacoreliteSessionID = "SDK.PHP";
 	private static $_pma_usecachewhenretrievingtiles = true;
 	private static $_pma_amount_of_data_downloaded = array("SDK.PHP" => 0);
 
@@ -516,29 +516,42 @@ class CoreAdmin {
 	
 	/**
 	Define a new user in PMA.core
+	Returns true if user creation is successful; false if not.
 	*/
 	public static function AddUser($ASessionID, $login, $firstName, $lastName, $email, $password, $canAnnotate = false, $isAdmin = false, $isSuspended = false) {
+		if (Core::$_pma_pmacoreliteSessionID == $ASessionID) {
+			throw new \BadMethodCallException("PMA.start doesn't support AddUser()");
+		}
+		
 		$url = Core::_pma_url($ASessionID)."admin?singleWsdl";
 		print($url);
 		$client = new \SoapClient($url);
 
-		$create_user = $client->CreateUser(
-            array(
-                "sessionID" => $ASessionID,
-                "user" => array(
-                        "Administrator" => $isAdmin,
-                        "CanAnnotate"   => $canAnnotate,
-                        "Email"         => $email,
-                        "FirstName"     => $firstName,
-                        "LastName"      => $lastName,
-                        "Local"         => true,
-                        "Login"         => $login,
-                        "Password"      => $password,
-                        "Suspended"     => $isSuspended,
-                ),
-			)
-		);		
+		try {	
+			$client->CreateUser(
+				array(
+					"sessionID" => $ASessionID,
+					"user" => array(
+							"Administrator" => $isAdmin,
+							"CanAnnotate"   => $canAnnotate,
+							"Email"         => $email,
+							"FirstName"     => $firstName,
+							"LastName"      => $lastName,
+							"Local"         => true,
+							"Login"         => $login,
+							"Password"      => $password,
+							"Suspended"     => $isSuspended,
+					),
+				)
+			);	
+		} catch (\SoapFault $e) {
+			echo "\n<!-- Unable to create user -->\n";
+			return false;
+		}
+		return true;
 	}
+	
+	
 
 }
 
@@ -546,13 +559,15 @@ class CoreAdmin {
 Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
 */
 class PMA {
-	const version = "2.0.0.4";
+	const version = "2.0.0.9";
 
+	/** Internal use only */
 	public static function ends_with($wholestring, $suffix)
 	{
 		return substr($wholestring, - strlen($suffix)) == $suffix ? true : false;
 	}
 
+	/** Internal use only */
 	public static function starts_with($wholestring, $prefix)
 	{
 		return substr($wholestring, 0, strlen($prefix)) == $prefix ? true : false;
@@ -568,5 +583,4 @@ class PMA {
 		}
 	}	
 }
-
 
