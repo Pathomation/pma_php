@@ -1,8 +1,8 @@
 <?php
 /**
-The file contains classes that wrap around various components of Pathomation's software platform for digital microscopy
-More information about Pathomation's free software offering can be found at http://free.pathomation.com
-Commercial applications and tools can be found at http://www.pathomation.com
+* The file contains classes that wrap around various components of Pathomation's software platform for digital microscopy
+* More information about Pathomation's free software offering can be found at http://free.pathomation.com
+* Commercial applications and tools can be found at http://www.pathomation.com
 */
 
 namespace Pathomation;
@@ -10,15 +10,21 @@ namespace Pathomation;
 use \Exception;
 
 /**
-Class that wraps around the free PMA.core.lite (the server component of PMA.start), as well as its commercial variant; the PMA.core product
+* Class that wraps around the free PMA.core.lite (the server component of PMA.start), as well as its commercial variant; the PMA.core product
 */
 class Core {
 	# internal module helper variables and functions
+	/** in-memory cache for current PMA.core sessions */
 	private static $_pma_sessions = [];
+	/** in-memory cache for slide information objects */
 	private static $_pma_slideinfos = [];
+	/** the URL where PMA.core.lite (part of PMA.start) can be expected to be found */
 	private static $_pma_pmacoreliteURL = "http://localhost:54001/";
+	/** the default (anonymous) SessionID for PMA.core.lite (part of PMA.start) */
 	public static $_pma_pmacoreliteSessionID = "SDK.PHP";
+	/** reserved for future use */
 	private static $_pma_usecachewhenretrievingtiles = true;
+	/** keep track of the amount of data that was already retrieved; useful in benchmarking scenarios */
 	private static $_pma_amount_of_data_downloaded = array("SDK.PHP" => 0);
 
 	/** Internal use only */
@@ -153,7 +159,7 @@ class Core {
 	}
 
 	/**
-	Get version info from PMA.core instance running at $pmacoreURL
+	* Get version info from PMA.core instance running at $pmacoreURL
 	*/
 	public static function getVersionInfo($pmacoreURL = null)
 	{
@@ -180,11 +186,11 @@ class Core {
 	}
 
 	/**
-	Attempt to connect to PMA.core instance; success results in a SessionID
+	* Attempt to connect to PMA.core instance; success results in a SessionID
 	*/
 	public static function connect($pmacoreURL = null, $pmacoreUsername = "", $pmacorePassword = "")
 	{
-		if ($pmacoreURL == null) {
+		 if ($pmacoreURL == null) {
 			$pmacoreURL = self::$_pma_pmacoreliteURL;
 		}
 
@@ -199,7 +205,7 @@ class Core {
 		
 		// purposefully DON'T use helper function _pma_api_url() here:
 		// why? Because_pma_api_url() takes session information into account (which we don't have yet)
-		$url = self::_pma_join($pmacoreURL, "api/json/authenticate?caller=SDK.PHP");
+		$url = self::_pma_join($pmacoreURL, "api/json/authenticate?caller=".self::$_pma_pmacoreliteSessionID);
 		if ($pmacoreUsername != "") {
 			$url .= "&username=".PMA::_pma_q($pmacoreUsername);
 		}
@@ -234,7 +240,7 @@ class Core {
 	}
 
 	/**
-	Attempt to connect to PMA.core instance; success results in a SessionID
+	* Attempt to connect to PMA.core instance; success results in a SessionID
 	*/
 	public static function disconnect($sessionID = null)
 	{
@@ -261,7 +267,7 @@ class Core {
 	}
 
 	/**
-	Return an array of root-directories available to $sessionID
+	* Return an array of root-directories available to $sessionID
 	*/
 	public static function getRootDirectories($sessionID = null)
 	{
@@ -302,7 +308,7 @@ class Core {
 	}
 
 	/**
-	Look for the first directory in a directory hierarchy that starts at $startDir that has at least one actual slide in it
+	* Look for the first directory in a directory hierarchy that starts at $startDir that has at least one actual slide in it
 	*/
 	public static function getFirstNonEmptyDirectory($startDir = null, $sessionID = null)
 	{
@@ -336,7 +342,7 @@ class Core {
 	}
 
 	/**
-	Return an array of slides available to sessionID in the startDir directory
+	* Return an array of slides available to sessionID in the startDir directory
 	*/
 	public static function getSlides($startDir, $sessionID = null)
 	{
@@ -363,7 +369,7 @@ class Core {
 	}
 
 	/**
-	Get the UID (unique identifier) for a specific slide 
+	* Get the UID (unique identifier) for a specific slide 
 	*/
 	public static function getUID($slideRef, $sessionID = null)
 	{
@@ -387,7 +393,7 @@ class Core {
 	}	
 
 	/**
-	Get the fingerprint for a specific slide 
+	* Get the fingerprint for a specific slide 
 	*/
 	public static function getFingerprint($slideRef, $strict = false, $sessionID = null) 
 	{
@@ -411,7 +417,7 @@ class Core {
 	}
 		
 	/**
-	Return raw image information in the form of nested dictionaries
+	* Return raw image information in the form of nested dictionaries
 	*/
 	public static function getSlideInfo($slideRef, $sessionID = null)
 	{
@@ -440,7 +446,7 @@ class Core {
 	}
 	
 	/**
-	Get the URL that points to the barcode (alias for "label") for a slide
+	* Get the URL that points to the barcode (alias for "label") for a slide
 	*/
 	public static function getBarcodeUrl($slideRef, $sessionID = null) {		
 		$sessionID = Core::_pma_session_id($sessionID);
@@ -451,7 +457,7 @@ class Core {
 	}
 
 	/**
-	Get the barcode (alias for "label") image for a slide
+	* Get the barcode (alias for "label") image for a slide
 	*/
 	public static function getBarcodeImage($slideRef, $sessionID = null) {
 		$sessionID = Core::_pma_session_id($sessionID);
@@ -461,7 +467,7 @@ class Core {
 	}
 
 	/**
-	Get the URL that points to the label for a slide
+	* Get the URL that points to the label for a slide
 	*/
 	public static function getLabelUrl($slideRef, $sessionID = null) {
 		
@@ -469,7 +475,7 @@ class Core {
 	}
 	
 	/**
-	Get the label image for a slide
+	* Get the label image for a slide
 	*/
 	public static function getLabelImage($slideRef, $sessionID = null) {
 		$sessionID = pma::_pma_session_id($sessionID);
@@ -479,7 +485,7 @@ class Core {
 	}
 	
 	/**
-	Get the URL that points to the thumbnail for a slide
+	* Get the URL that points to the thumbnail for a slide
 	*/
 	public static function getThumbnailUrl($slideRef, $sessionID = null) {
 		$sessionID = Core::_pma_session_id($sessionID);
@@ -490,7 +496,7 @@ class Core {
 	}
 
 	/**
-	Get the thumbnail image for a slide
+	* Get the thumbnail image for a slide
 	*/
 	public static function getThumbnailImage($slideRef, $sessionID = null) {		
 		$sessionID = Core::_pma_session_id($sessionID);
@@ -502,12 +508,16 @@ class Core {
 }
 
 /**
-Wrapper around PMA.UI JavaScript framework
+* Wrapper around PMA.UI JavaScript framework
 */
 class UI {
+	/** where is the PMA.UI javascript hosted? Where should the browser go look for it? */
 	public static $_pma_ui_javascript_path = "pma.ui/";
+	/** internal use only; keep track of whether the code to load the javascript library has already been sent to the client */
 	private static $_pma_ui_framework_embedded = false;
+	/** internal use only; used for numbering subsequently requested PMA.UI viewport objects for multiple slides */
 	private static $_pma_ui_viewport_count = 0;
+	/** internal use only; used for numbering subsequently requested PMA.UI gallery objects */
 	private static $_pma_ui_gallery_count = 0;
 	
 	/** internal helper function to prevent PMA.UI framework from being loaded more than once */
@@ -526,8 +536,10 @@ class UI {
 		}
 	}	
 	
-	/** output HTML code to display a single slide through a PMA.UI viewport control
-		authentication against PMA.core happens through a pre-established SessionID */
+	/** 
+	* output HTML code to display a single slide through a PMA.UI viewport control
+	* authentication against PMA.core happens through a pre-established SessionID 
+	*/
 	public static function embed_slide_by_sessionID($server, $slideRef, $sessionID, $options = null) {
 		self::_pma_embed_pma_ui_framework();
 		self::$_pma_ui_viewport_count++;
@@ -554,9 +566,10 @@ class UI {
 		return $div_id;
 	}
 
-	/** output HTML code to display a single slide through a PMA.UI viewport control 
-		authentication against PMA.core happens in real-time through the provided $username and $password credentials
-		Note that the username and password and NOT rendered in the HTML output (authentication happens in PHP on the server-side).
+	/** 
+	* output HTML code to display a single slide through a PMA.UI viewport control 
+	* authentication against PMA.core happens in real-time through the provided $username and $password credentials
+	* Note that the username and password and NOT rendered in the HTML output (authentication happens in PHP on the server-side).
 	*/
 	public static function embed_slide_by_username($server, $slideRef, $username, $password = "", $options = null) {
 		$session = Core::connect($server, $username, $password);
@@ -566,13 +579,13 @@ class UI {
 }
 
 /**
-CoreAdmin class. Interface to PMA.core for administrative operations. Does NOT apply to PMA.start / PMA.core.lite
+* CoreAdmin class. Interface to PMA.core for administrative operations. Does NOT apply to PMA.start / PMA.core.lite
 */
 class CoreAdmin {
 	
 	/**
-	Define a new user in PMA.core
-	Returns true if user creation is successful; false if not.
+	* Define a new user in PMA.core
+	* Returns true if user creation is successful; false if not.
 	*/
 	public static function AddUser($ASessionID, $login, $firstName, $lastName, $email, $password, $canAnnotate = false, $isAdmin = false, $isSuspended = false) {
 		if (Core::$_pma_pmacoreliteSessionID == $ASessionID) {
@@ -609,11 +622,11 @@ class CoreAdmin {
 }
 
 /**
-Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
+* Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)* 
 */
 class PMA {
-	/** returns the current version of the library (2.0.0.11) */
-	const version = "2.0.0.11";
+	/** returns the current version of the library (2.0.0.12) */
+	const version = "2.0.0.12";
 
 	/** Internal use only */
 	public static function ends_with($wholestring, $suffix)
@@ -621,13 +634,13 @@ class PMA {
 		return substr($wholestring, - strlen($suffix)) == $suffix ? true : false;
 	}
 
-	/** Internal use only */
+	/** Internal use only; check if a string starts with a particular substring */
 	public static function starts_with($wholestring, $prefix)
 	{
 		return substr($wholestring, 0, strlen($prefix)) == $prefix ? true : false;
 	}
 
-	/** Internal use only */
+	/** Internal use only; check if a string ends with a particular substring */
 	public static function _pma_q($arg)
 	{
 		if ($arg == null) {
