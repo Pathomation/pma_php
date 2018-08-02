@@ -7,6 +7,8 @@ Commercial applications and tools can be found at http://www.pathomation.com
 
 namespace Pathomation;
 
+use \Exception;
+
 /**
 Class that wraps around the free PMA.core.lite (the server component of PMA.start), as well as its commercial variant; the PMA.core product
 */
@@ -139,7 +141,7 @@ class Core {
 
 
 	/**
-	See if there's a PMA.core.lite or PMA.core instance running at $pmacoreURL
+	* See if there's a PMA.core.lite or PMA.core instance running at $pmacoreURL
 	*/
 	public static function isLite($pmacoreURL = null)
 	{
@@ -411,7 +413,7 @@ class Core {
 	/**
 	Return raw image information in the form of nested dictionaries
 	*/
-/*	public static function getSlideInfo($slideRef, $sessionID = null)
+	public static function getSlideInfo($slideRef, $sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
 		if (PMA::starts_with($slideRef, "/")) {
@@ -429,13 +431,13 @@ class Core {
 
 			self::$_pma_amount_of_data_downloaded[$sessionID] += strlen($r);
 			if (isset($json["Code"])) {
-				throw new Exception("ImageInfo to " + slideRef + " resulted in: " + json["Message"] + " (keep in mind that slideRef is case sensitive!)");
+				throw new Exception("ImageInfo to " + slideRef + " resulted in: " + $json["Message"] + " (keep in mind that slideRef is case sensitive!)");
 			} else {
 				self::$_pma_slideinfos[$sessionID][$slideRef] = $json;
 			}
 		}
 		return self::$_pma_slideinfos[$sessionID][$slideRef];
-	}*/
+	}
 	
 	/**
 	Get the URL that points to the barcode (alias for "label") for a slide
@@ -610,8 +612,8 @@ class CoreAdmin {
 Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
 */
 class PMA {
-	/** returns the current version of the library (2.0.0.10) */
-	const version = "2.0.0.10";
+	/** returns the current version of the library (2.0.0.11) */
+	const version = "2.0.0.11";
 
 	/** Internal use only */
 	public static function ends_with($wholestring, $suffix)
