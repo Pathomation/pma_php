@@ -96,7 +96,7 @@ class Core {
 		}
 		
 		if (strlen($contents) < 1) {
-			echo "Unable to detect PMA.core(.lite)";
+			//echo "Unable to detect PMA.core(.lite)";
 			return null;
 		}
 		
@@ -187,7 +187,7 @@ class Core {
 		}
 
 		if ($pmacoreURL == self::$_pma_pmacoreliteURL) {
-			if (is_lite()) {
+			if (self::is_lite()) {
 				// no point authenticating localhost / PMA.core.lite
 				return self::$_pma_pmacoreliteSessionID;
 			} else {
@@ -385,6 +385,59 @@ class Core {
 	}	
 
 	/**
+	Get the fingerprint for a specific slide 
+	*/
+	public static function getFingerprint($slideRef, $strict = false, $sessionID = null) 
+	{
+		$sessionID = self::_pma_session_id($sessionID);
+		$url = self::_pma_api_url($sessionID)."GetFingerprint?sessionID=".PMA::_pma_q($sessionID)."&strict=".($strict ? "true": "false")."&pathOrUid=".PMA::_pma_q($slideRef);
+
+		$contents= file_get_contents($url);
+		
+		$json = json_decode($contents, true);
+		if (isset($json["d"])) {
+			$json = $json["d"];
+		}
+		
+		self::$_pma_amount_of_data_downloaded[$sessionID] += strlen($contents);
+		if (isset($json["Code"])) {
+			throw new Exception("get_fingerprint on  " + $slideRef + " resulted in: " + $json["Message"] + " (keep in mind that slideRef is case sensitive!)");
+		} else {
+			$fingerprint = $json;
+		}
+		return $fingerprint;
+	}
+		
+	/**
+	Return raw image information in the form of nested dictionaries
+	*/
+/*	public static function getSlideInfo($slideRef, $sessionID = null)
+	{
+		$sessionID = self::_pma_session_id($sessionID);
+		if (PMA::starts_with($slideRef, "/")) {
+			$slideRef = substr($slideRef, 1);
+		}
+		
+		if (!isset(self::$_pma_slideinfos[$sessionID][$slideRef])) {
+			$url = self::_pma_api_url($sessionID)."GetImageInfo?SessionID=".PMA::_pma_q($sessionID)."&pathOrUid=".PMA::_pma_q($slideRef);
+			$r = file_get_contents($url);
+
+			$json = json_decode($r, true);
+			if (isset($json["d"])) {
+				$json = $json["d"];
+			}
+
+			self::$_pma_amount_of_data_downloaded[$sessionID] += strlen($r);
+			if (isset($json["Code"])) {
+				throw new Exception("ImageInfo to " + slideRef + " resulted in: " + json["Message"] + " (keep in mind that slideRef is case sensitive!)");
+			} else {
+				self::$_pma_slideinfos[$sessionID][$slideRef] = $json;
+			}
+		}
+		return self::$_pma_slideinfos[$sessionID][$slideRef];
+	}*/
+	
+	/**
 	Get the URL that points to the barcode (alias for "label") for a slide
 	*/
 	public static function getBarcodeUrl($slideRef, $sessionID = null) {		
@@ -408,7 +461,7 @@ class Core {
 	/**
 	Get the URL that points to the label for a slide
 	*/
-	public static function getLabelUrl($slideRef, $sessionID = None) {
+	public static function getLabelUrl($slideRef, $sessionID = null) {
 		
 		return getBarcodeUrl($slideRef, $sessionID);
 	}
@@ -443,6 +496,7 @@ class Core {
 		self::$_pma_amount_of_data_downloaded[sessionID] += strlen(serialize($img));
 		return $img;
 	}		
+
 }
 
 /**
@@ -494,7 +548,7 @@ class UI {
 					console.log("Error! Check the console for details.");
 				});
 		</script>
-		<?
+		<?php
 		return $div_id;
 	}
 
@@ -550,16 +604,14 @@ class CoreAdmin {
 		}
 		return true;
 	}
-	
-	
-
 }
 
 /**
 Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
 */
 class PMA {
-	const version = "2.0.0.9";
+	/** returns the current version of the library (2.0.0.10) */
+	const version = "2.0.0.10";
 
 	/** Internal use only */
 	public static function ends_with($wholestring, $suffix)
