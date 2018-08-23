@@ -1,30 +1,22 @@
 <?php
 /**
-* The file contains classes that wrap around various components of Pathomation's software platform for digital microscopy
-* More information about Pathomation's free software offering can be found at http://free.pathomation.com
-* Commercial applications and tools can be found at http://www.pathomation.com
+The file contains classes that wrap around various components of Pathomation's software platform for digital microscopy
+More information about Pathomation's free software offering can be found at http://free.pathomation.com
+Commercial applications and tools can be found at http://www.pathomation.com
 */
 
 namespace Pathomation;
 
-use \Exception;
-
 /**
-* Class that wraps around the free PMA.core.lite (the server component of PMA.start), as well as its commercial variant; the PMA.core product
+Class that wraps around the free PMA.core.lite (the server component of PMA.start), as well as its commercial variant; the PMA.core product
 */
 class Core {
 	# internal module helper variables and functions
-	/** in-memory cache for current PMA.core sessions */
 	private static $_pma_sessions = [];
-	/** in-memory cache for slide information objects */
 	private static $_pma_slideinfos = [];
-	/** the URL where PMA.core.lite (part of PMA.start) can be expected to be found */
-	private static $_pma_pmacoreliteURL = "http://localhost:54001/";
-	/** the default (anonymous) SessionID for PMA.core.lite (part of PMA.start) */
+	public static $_pma_pmacoreliteURL = "http://localhost:54001/";
 	public static $_pma_pmacoreliteSessionID = "SDK.PHP";
-	/** reserved for future use */
 	private static $_pma_usecachewhenretrievingtiles = true;
-	/** keep track of the amount of data that was already retrieved; useful in benchmarking scenarios */
 	private static $_pma_amount_of_data_downloaded = array("SDK.PHP" => 0);
 
 	/** Internal use only */
@@ -147,7 +139,7 @@ class Core {
 
 
 	/**
-	* See if there's a PMA.core.lite or PMA.core instance running at $pmacoreURL
+	See if there's a PMA.core.lite or PMA.core instance running at $pmacoreURL
 	*/
 	public static function isLite($pmacoreURL = null)
 	{
@@ -159,7 +151,7 @@ class Core {
 	}
 
 	/**
-	* Get version info from PMA.core instance running at $pmacoreURL
+	Get version info from PMA.core instance running at $pmacoreURL
 	*/
 	public static function getVersionInfo($pmacoreURL = null)
 	{
@@ -186,16 +178,16 @@ class Core {
 	}
 
 	/**
-	* Attempt to connect to PMA.core instance; success results in a SessionID
+	Attempt to connect to PMA.core instance; success results in a SessionID
 	*/
 	public static function connect($pmacoreURL = null, $pmacoreUsername = "", $pmacorePassword = "")
 	{
-		 if ($pmacoreURL == null) {
+		if ($pmacoreURL == null) {
 			$pmacoreURL = self::$_pma_pmacoreliteURL;
 		}
 
 		if ($pmacoreURL == self::$_pma_pmacoreliteURL) {
-			if (self::is_lite()) {
+			if (self::_pma_is_lite()) {
 				// no point authenticating localhost / PMA.core.lite
 				return self::$_pma_pmacoreliteSessionID;
 			} else {
@@ -205,7 +197,7 @@ class Core {
 		
 		// purposefully DON'T use helper function _pma_api_url() here:
 		// why? Because_pma_api_url() takes session information into account (which we don't have yet)
-		$url = self::_pma_join($pmacoreURL, "api/json/authenticate?caller=".self::$_pma_pmacoreliteSessionID);
+		$url = self::_pma_join($pmacoreURL, "api/json/authenticate?caller=SDK.PHP");
 		if ($pmacoreUsername != "") {
 			$url .= "&username=".PMA::_pma_q($pmacoreUsername);
 		}
@@ -240,7 +232,7 @@ class Core {
 	}
 
 	/**
-	* Attempt to connect to PMA.core instance; success results in a SessionID
+	Attempt to connect to PMA.core instance; success results in a SessionID
 	*/
 	public static function disconnect($sessionID = null)
 	{
@@ -267,7 +259,7 @@ class Core {
 	}
 
 	/**
-	* Return an array of root-directories available to $sessionID
+	Return an array of root-directories available to $sessionID
 	*/
 	public static function getRootDirectories($sessionID = null)
 	{
@@ -308,7 +300,7 @@ class Core {
 	}
 
 	/**
-	* Look for the first directory in a directory hierarchy that starts at $startDir that has at least one actual slide in it
+	Look for the first directory in a directory hierarchy that starts at $startDir that has at least one actual slide in it
 	*/
 	public static function getFirstNonEmptyDirectory($startDir = null, $sessionID = null)
 	{
@@ -342,7 +334,7 @@ class Core {
 	}
 
 	/**
-	* Return an array of slides available to sessionID in the startDir directory
+	Return an array of slides available to sessionID in the startDir directory
 	*/
 	public static function getSlides($startDir, $sessionID = null)
 	{
@@ -369,7 +361,7 @@ class Core {
 	}
 
 	/**
-	* Get the UID (unique identifier) for a specific slide 
+	Get the UID (unique identifier) for a specific slide 
 	*/
 	public static function getUID($slideRef, $sessionID = null)
 	{
@@ -393,7 +385,7 @@ class Core {
 	}	
 
 	/**
-	* Get the fingerprint for a specific slide 
+	Get the fingerprint for a specific slide 
 	*/
 	public static function getFingerprint($slideRef, $strict = false, $sessionID = null) 
 	{
@@ -417,7 +409,7 @@ class Core {
 	}
 		
 	/**
-	* Return raw image information in the form of nested dictionaries
+	Return raw image information in the form of nested dictionaries
 	*/
 	public static function getSlideInfo($slideRef, $sessionID = null)
 	{
@@ -437,7 +429,7 @@ class Core {
 
 			self::$_pma_amount_of_data_downloaded[$sessionID] += strlen($r);
 			if (isset($json["Code"])) {
-				throw new Exception("ImageInfo to " + slideRef + " resulted in: " + $json["Message"] + " (keep in mind that slideRef is case sensitive!)");
+				throw new Exception("ImageInfo to " + $slideRef + " resulted in: " + $json["Message"] + " (keep in mind that slideRef is case sensitive!)");
 			} else {
 				self::$_pma_slideinfos[$sessionID][$slideRef] = $json;
 			}
@@ -446,7 +438,7 @@ class Core {
 	}
 	
 	/**
-	* Get the URL that points to the barcode (alias for "label") for a slide
+	Get the URL that points to the barcode (alias for "label") for a slide
 	*/
 	public static function getBarcodeUrl($slideRef, $sessionID = null) {		
 		$sessionID = Core::_pma_session_id($sessionID);
@@ -457,7 +449,7 @@ class Core {
 	}
 
 	/**
-	* Get the barcode (alias for "label") image for a slide
+	Get the barcode (alias for "label") image for a slide
 	*/
 	public static function getBarcodeImage($slideRef, $sessionID = null) {
 		$sessionID = Core::_pma_session_id($sessionID);
@@ -467,7 +459,7 @@ class Core {
 	}
 
 	/**
-	* Get the URL that points to the label for a slide
+	Get the URL that points to the label for a slide
 	*/
 	public static function getLabelUrl($slideRef, $sessionID = null) {
 		
@@ -475,7 +467,7 @@ class Core {
 	}
 	
 	/**
-	* Get the label image for a slide
+	Get the label image for a slide
 	*/
 	public static function getLabelImage($slideRef, $sessionID = null) {
 		$sessionID = pma::_pma_session_id($sessionID);
@@ -485,7 +477,7 @@ class Core {
 	}
 	
 	/**
-	* Get the URL that points to the thumbnail for a slide
+	Get the URL that points to the thumbnail for a slide
 	*/
 	public static function getThumbnailUrl($slideRef, $sessionID = null) {
 		$sessionID = Core::_pma_session_id($sessionID);
@@ -496,32 +488,30 @@ class Core {
 	}
 
 	/**
-	* Get the thumbnail image for a slide
+	Get the thumbnail image for a slide
 	*/
 	public static function getThumbnailImage($slideRef, $sessionID = null) {		
 		$sessionID = Core::_pma_session_id($sessionID);
 		$img = imagecreatefromjpeg(self::getThumbnailUrl($slideRef, $sessionID));
-		self::$_pma_amount_of_data_downloaded[sessionID] += strlen(serialize($img));
+		self::$_pma_amount_of_data_downloaded[$sessionID] += strlen(serialize($img));
 		return $img;
 	}		
-
 }
 
 /**
-* Wrapper around PMA.UI JavaScript framework
+Wrapper around PMA.UI JavaScript framework
 */
 class UI {
-	/** where is the PMA.UI javascript hosted? Where should the browser go look for it? */
+	public static $_pma_start_ui_javascript_path = "http://localhost:54001/Scripts/pmaui/";
 	public static $_pma_ui_javascript_path = "pma.ui/";
-	/** internal use only; keep track of whether the code to load the javascript library has already been sent to the client */
 	private static $_pma_ui_framework_embedded = false;
-	/** internal use only; used for numbering subsequently requested PMA.UI viewport objects for multiple slides */
 	private static $_pma_ui_viewport_count = 0;
-	/** internal use only; used for numbering subsequently requested PMA.UI gallery objects */
+	private static $_pma_ui_viewports = [];
 	private static $_pma_ui_gallery_count = 0;
+	private static $_pma_ui_galleries = [];
 	
 	/** internal helper function to prevent PMA.UI framework from being loaded more than once */
-	private static function _pma_embed_pma_ui_framework() {
+	private static function _pma_embed_pma_ui_framework($sessionID) {
 		if (!self::$_pma_ui_framework_embedded) {
 			if (!pma::ends_with(self::$_pma_ui_javascript_path, "/")) {
 				self::$_pma_ui_javascript_path .= "/";
@@ -532,25 +522,25 @@ class UI {
 			echo "<!-- include PMA.UI.components script & css -->\n";
 			echo "<script src='".self::$_pma_ui_javascript_path."PMA.UI.components.all.min.js' type='text/javascript'></script>\n";
 			echo "<link href='".self::$_pma_ui_javascript_path."PMA.UI.components.all.min.css' type='text/css' rel='stylesheet'>\n";
+			echo "<script>var pma_ui_context = new PMA.UI.Components.Context({ caller: 'PMA.PHP UI class' });</script>";
 			self::$_pma_ui_framework_embedded = true;
 		}
 	}	
 	
-	/** 
-	* output HTML code to display a single slide through a PMA.UI viewport control
-	* authentication against PMA.core happens through a pre-established SessionID 
-	*/
-	public static function embed_slide_by_sessionID($server, $slideRef, $sessionID, $options = null) {
-		self::_pma_embed_pma_ui_framework();
+	/** output HTML code to display a single slide through a PMA.UI viewport control
+		authentication against PMA.core happens through a pre-established SessionID */
+	public static function embedSlideBySessionID($server, $slideRef, $sessionID, $options = null) {
+		self::_pma_embed_pma_ui_framework($sessionID);
 		self::$_pma_ui_viewport_count++;
-		$div_id = "pma_viewport".self::$_pma_ui_viewport_count;
+		$viewport_id = "pma_viewport".self::$_pma_ui_viewport_count;
+		self::$_pma_ui_viewports[] = $viewport_id;
 		?>
-		<div id="<?php echo $div_id; ?>"></div>
+		<div id="<?php echo $viewport_id; ?>"></div>
 		<script type="text/javascript">
 			// initialize the viewport
-			var viewport = new PMA.UI.View.Viewport({
+			var <?php echo $viewport_id; ?> = new PMA.UI.View.Viewport({
 				caller: "PMA.PHP UI class",
-				element: "#<?php echo $div_id; ?>",
+				element: "#<?php echo $viewport_id; ?>",
 				image: "<?php echo $slideRef;?>",
 				serverUrls: ["<?php echo $server;?>"],
 				sessionID: "<?php echo $sessionID;?>",
@@ -563,29 +553,125 @@ class UI {
 				});
 		</script>
 		<?php
-		return $div_id;
+		return $viewport_id;
 	}
 
-	/** 
-	* output HTML code to display a single slide through a PMA.UI viewport control 
-	* authentication against PMA.core happens in real-time through the provided $username and $password credentials
-	* Note that the username and password and NOT rendered in the HTML output (authentication happens in PHP on the server-side).
+	/** output HTML code to display a single slide through a PMA.UI viewport control 
+		authentication against PMA.core happens in real-time through the provided $username and $password credentials
+		Note that the username and password and NOT rendered in the HTML output (authentication happens in PHP on the server-side).
 	*/
-	public static function embed_slide_by_username($server, $slideRef, $username, $password = "", $options = null) {
+	public static function embedSlideByUsername($server, $slideRef, $username, $password = "", $options = null) {
 		$session = Core::connect($server, $username, $password);
-		return self::embed_slide_by_sessionID($server, $slideRef, $session, $options);
+		return self::embedSlideBySessionID($server, $slideRef, $session, $options);
+	}
+
+	/** output HTML code to display a gallery that shows all thumbnails that exist in a specific folder hosted by the specified PMA.core instance 
+		authentication against PMA.core happens through a pre-established SessionID */
+    public static function embedGalleryBySessionID($server, $path, $sessionID, $options = null) {
+		self::_pma_embed_pma_ui_framework($sessionID);
+		self::$_pma_ui_gallery_count++;
+		$gallery_id = "pma_gallery".self::$_pma_ui_gallery_count;
+		self::$_pma_ui_galleries[] = $gallery_id;
+		?>
+		<div id="<?php echo $gallery_id; ?>"></div>
+		<script type="text/javascript">
+			new PMA.UI.Authentication.SessionLogin(pma_ui_context, [{ serverUrl: "<?php echo $server; ?>", sessionId: "<?php echo $sessionID; ?>" }]);
+			
+			// create a gallery that will display the contents of a directory
+			var <?php echo $gallery_id; ?> = new PMA.UI.Components.Gallery(pma_ui_context, {
+				element: "#<?php echo $gallery_id; ?>",
+				thumbnailWidth: 200,
+				thumbnailHeight: 150,
+				mode: "horizontal",
+				showFileName: true,
+				showBarcode: true,
+				barcodeRotation: 180,
+				filenameCallback: function (path) {
+					// show the filename without extension
+					return path.split('/').pop().split('.')[0];
+				}
+			});
+
+			// load the contents of a directory
+			<?php echo $gallery_id; ?>.loadDirectory("<?php echo $server; ?>", "<?php echo $path; ?>");
+		</script>
+		<?php
+		return $gallery_id;
+	}
+	
+	/** output HTML code to display a gallery that shows all thumbnails that exist in a specific folder hosted by the specified PMA.core instance 
+		authentication against PMA.core happens in real-time through the provided $username and $password credentials
+		Note that the username and password and NOT rendered in the HTML output (authentication happens in PHP on the server-side).
+	*/
+	public static function embedGalleryByUsername($server, $path, $username, $password = "", $options = null) {
+		$session = Core::connect($server, $username, $password);
+		return self::embedGalleryBySessionID($server, $path, $session, $options);
+	}
+
+	/** output HTML code to couple an earlier instantiated PMA.UI gallery to a PMA.UI viewport. The PMA.UI viewport can be instantiated earlier, or not at all */	
+	public static function linkGalleryToViewport($galleryDiv, $viewportDiv) {
+		// verify the validity of the $galleryDiv argument
+		if (in_array($galleryDiv, self::$_pma_ui_viewports)) {
+			throw new \BadMethodCallException("$galleryDiv is not a PMA.UI gallery (it's actually a viewport; did you switch the arguments up?)");
+		}
+		if (!in_array($galleryDiv, self::$_pma_ui_galleries)) {
+			throw new \BadMethodCallException("$galleryDiv is not a valid PMA.UI gallery container");
+		}
+
+		// verify the validity of the $viewportDiv argument
+		if (in_array($viewportDiv, self::$_pma_ui_galleries)) {
+			throw new \BadMethodCallException("$viewportDiv is not a PMA.UI viewport (it's actually a gallery; did you switch the arguments up?)");
+		}
+		if (!in_array($viewportDiv, self::$_pma_ui_viewports)) {
+			// viewport container doesn't yet exist, but this doesn't have to be a showstopper; just create it on the fly
+			?>
+			<div id="<?php echo $viewportDiv; ?>"></div>
+		<?php
+		}
+		?>
+		<script>
+        // create an image loader that will allow us to load images easily
+        var slideLoader = new PMA.UI.Components.SlideLoader(pma_ui_context, {
+            element: "#<?php echo $viewportDiv; ?>",
+            theme: PMA.UI.View.Themes.Default,
+            overview: {
+                collapsed: false
+            },
+            // the channel selector is only displayed for images that have multiple channels
+            channels: {
+                collapsed: false
+            },
+            // the barcode is only displayed if the image actually contains one
+            barcode: {
+                collapsed: false,
+                rotation: 180
+            },
+            loadingBar: true,
+            snapshot: true,
+            digitalZoomLevels: 2,
+            scaleLine: true,
+            filename: true
+        });
+
+        // listen for the slide selected event to load the selected image when clicked
+        <?php echo $galleryDiv; ?>.listen(PMA.UI.Components.Events.SlideSelected, function (args) {
+            // load the image with the image loader
+            slideLoader.load(args.serverUrl, args.path);
+        });
+		</script>
+		<?php
 	}
 
 }
 
 /**
-* CoreAdmin class. Interface to PMA.core for administrative operations. Does NOT apply to PMA.start / PMA.core.lite
+CoreAdmin class. Interface to PMA.core for administrative operations. Does NOT apply to PMA.start / PMA.core.lite
 */
 class CoreAdmin {
 	
 	/**
-	* Define a new user in PMA.core
-	* Returns true if user creation is successful; false if not.
+	Define a new user in PMA.core
+	Returns true if user creation is successful; false if not.
 	*/
 	public static function AddUser($ASessionID, $login, $firstName, $lastName, $email, $password, $canAnnotate = false, $isAdmin = false, $isSuspended = false) {
 		if (Core::$_pma_pmacoreliteSessionID == $ASessionID) {
@@ -622,11 +708,11 @@ class CoreAdmin {
 }
 
 /**
-* Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)* 
+Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
 */
 class PMA {
-	/** returns the current version of the library (2.0.0.12) */
-	const version = "2.0.0.12";
+	/** returns the current version of the library (2.0.0.13) */
+	const version = "2.0.0.13";
 
 	/** Internal use only */
 	public static function ends_with($wholestring, $suffix)
@@ -634,13 +720,13 @@ class PMA {
 		return substr($wholestring, - strlen($suffix)) == $suffix ? true : false;
 	}
 
-	/** Internal use only; check if a string starts with a particular substring */
+	/** Internal use only */
 	public static function starts_with($wholestring, $prefix)
 	{
 		return substr($wholestring, 0, strlen($prefix)) == $prefix ? true : false;
 	}
 
-	/** Internal use only; check if a string ends with a particular substring */
+	/** Internal use only */
 	public static function _pma_q($arg)
 	{
 		if ($arg == null) {
