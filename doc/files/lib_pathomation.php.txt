@@ -509,6 +509,8 @@ class UI {
 	private static $_pma_ui_viewports = [];
 	private static $_pma_ui_gallery_count = 0;
 	private static $_pma_ui_galleries = [];
+	private static $_pma_ui_loader_count = 0;
+	private static $_pma_ui_loaders = [];
 	
 	/** internal helper function to prevent PMA.UI framework from being loaded more than once */
 	private static function _pma_embed_pma_ui_framework($sessionID) {
@@ -582,7 +584,7 @@ class UI {
 				element: "#<?php echo $gallery_id; ?>",
 				thumbnailWidth: 200,
 				thumbnailHeight: 150,
-				mode: "horizontal",
+				mode: "<?php echo (isset($options) && $options != null) ?  (isset($options["mode"]) ? $options["mode"]: "horizontal"): "horizontal"; ?>",
 				showFileName: true,
 				showBarcode: true,
 				barcodeRotation: 180,
@@ -622,8 +624,15 @@ class UI {
 		if (in_array($viewportDiv, self::$_pma_ui_galleries)) {
 			throw new \BadMethodCallException("$viewportDiv is not a PMA.UI viewport (it's actually a gallery; did you switch the arguments up?)");
 		}
+		
+		self::$_pma_ui_loader_count++;
+		$loader_id = "pma_slideLoader".self::$_pma_ui_loader_count;
+		self::$_pma_ui_loaders[] = $loader_id;
+		
 		if (!in_array($viewportDiv, self::$_pma_ui_viewports)) {
 			// viewport container doesn't yet exist, but this doesn't have to be a showstopper; just create it on the fly
+			self::$_pma_ui_viewports[] = $viewportDiv;
+			self::$_pma_ui_viewport_count++;
 			?>
 			<div id="<?php echo $viewportDiv; ?>"></div>
 		<?php
@@ -631,7 +640,7 @@ class UI {
 		?>
 		<script>
         // create an image loader that will allow us to load images easily
-        var slideLoader = new PMA.UI.Components.SlideLoader(pma_ui_context, {
+        var <?php echo $loader_id; ?> = new PMA.UI.Components.SlideLoader(pma_ui_context, {
             element: "#<?php echo $viewportDiv; ?>",
             theme: PMA.UI.View.Themes.Default,
             overview: {
@@ -656,7 +665,7 @@ class UI {
         // listen for the slide selected event to load the selected image when clicked
         <?php echo $galleryDiv; ?>.listen(PMA.UI.Components.Events.SlideSelected, function (args) {
             // load the image with the image loader
-            slideLoader.load(args.serverUrl, args.path);
+            <?php echo $loader_id; ?>.load(args.serverUrl, args.path);
         });
 		</script>
 		<?php
@@ -711,8 +720,8 @@ class CoreAdmin {
 Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
 */
 class PMA {
-	/** returns the current version of the library (2.0.0.13) */
-	const version = "2.0.0.13";
+	/** returns the current version of the library (2.0.0.10) */
+	const version = "2.0.0.10";
 
 	/** Internal use only */
 	public static function ends_with($wholestring, $suffix)
