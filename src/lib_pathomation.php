@@ -143,9 +143,8 @@ class Core {
 	*/
 	public static function isLite($pmacoreURL = null)
 	{
-		global $_pma_pmacoreliteURL;
 		if ($pmacoreURL == null) {
-			$pmacoreURL = $_pma_pmacoreliteURL;
+			$pmacoreURL = self::$_pma_pmacoreliteURL;
 		}
 		return self::_pma_is_lite($pmacoreURL);
 	}
@@ -155,13 +154,13 @@ class Core {
 	*/
 	public static function getVersionInfo($pmacoreURL = null)
 	{
-		global $_pma_pmacoreliteURL;
 		if ($pmacoreURL == null) {
-			$pmacoreURL = $_pma_pmacoreliteURL;
+			$pmacoreURL = self::$_pma_pmacoreliteURL;
 		}
 		// purposefully DON'T use helper function _pma_api_url() here:
 		// why? because GetVersionInfo can be invoked WITHOUT a valid SessionID; _pma_api_url() takes session information into account
 		$url = self::_pma_join($pmacoreURL, "api/json/GetVersionInfo");
+		echo $url;
 		$contents = "";
 		try {
 			@$contents = file_get_contents($url);
