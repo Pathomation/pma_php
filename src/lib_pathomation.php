@@ -160,7 +160,6 @@ class Core {
 		// purposefully DON'T use helper function _pma_api_url() here:
 		// why? because GetVersionInfo can be invoked WITHOUT a valid SessionID; _pma_api_url() takes session information into account
 		$url = self::_pma_join($pmacoreURL, "api/json/GetVersionInfo");
-		echo $url;
 		$contents = "";
 		try {
 			@$contents = file_get_contents($url);
@@ -245,6 +244,7 @@ class Core {
 			$contents = @file_get_contents($url);
 		} catch (Exception $ex) {
 			throw new Exception("Unable to disconnect");
+			$contents = "";
 		}
 		
 		self::$_pma_amount_of_data_downloaded[$sessionID] += strlen($contents);
@@ -264,7 +264,12 @@ class Core {
 	{
 		$sessionID = self::_pma_session_id($sessionID);
 		$url = self::_pma_api_url($sessionID)."GetRootDirectories?sessionID=".PMA::_pma_q($sessionID);
-		$contents = file_get_contents($url);
+		try {
+			$contents = @file_get_contents($url);
+		} catch (Exception $ex) {
+			throw new Exception("Unable to retrieve root-directories through $sessionID");
+			$contents = "";
+		}
 
 		self::$_pma_amount_of_data_downloaded[$sessionID] += strlen($contents);
 
