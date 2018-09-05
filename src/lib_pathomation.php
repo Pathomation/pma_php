@@ -318,7 +318,7 @@ class Core {
 		if (count($slides) > 0) {
 			return $startDir;
 		} else {
-			if (startDir == "/") {
+			if ($startDir == "/") {
 				foreach (self::getRootDirectories($sessionID) as $dir) {
 					$nonEmtptyDir = self::getFirstNonEmptyDirectory($dir, $sessionID);
 					if ($nonEmtptyDir !== null) {
