@@ -1,8 +1,5 @@
 # **Get version information**
 
-- [Load library](#load-library)
-- [Get version information](#get-version-information)
-
 
 ## Load library
 ```

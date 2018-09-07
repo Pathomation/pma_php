@@ -1,8 +1,5 @@
 # **Get UID for a slide**
 
-- [Load library](#load-library)
-- [Get UID for a slide](#get-uid-for-a-slide)
-
 
 ## Load library
 ```

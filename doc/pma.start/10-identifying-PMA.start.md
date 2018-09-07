@@ -1,8 +1,5 @@
 # **Test for PMA.core.lite (PMA.start)**
 
-- [Load library](#load-library)
-- [Test for PMA.core.lite (PMA.start)](#test-for-pma.core.lite)
-
 
 ## Load library
 ```

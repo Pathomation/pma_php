@@ -1,8 +1,5 @@
 # **Getting slides**
 
-- [Load library](#load-library)
-- [Getting slides](#getting-slides)
-
 
 ## Load library
 ```

@@ -1,8 +1,5 @@
 # **Getting drive letters**
 
-- [Load library](#load-library)
-- [Getting drive letters](#getting-drive-letters)
-
 
 ## Load library
 ```

@@ -1,8 +1,5 @@
 # **Getting directories**
 
-- [Load library](#load-library)
-- [Getting directories](#getting-directories)
-
 
 ## Load library
 ```

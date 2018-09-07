@@ -1,8 +1,5 @@
 # **Identifying PMA.core**
 
-- [Load library](#load-library)
-- [Identifying PMA.core](#identifying-pma.core)
-
 
 ## Load library
 ```

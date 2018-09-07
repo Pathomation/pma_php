@@ -1,8 +1,5 @@
 # **Getting version information about PMA.core**
 
-- [Load library](#load-library)
-- [Getting version information about PMA.core](#getting-version-information-about-pma.core)
-
 
 ## Load library
 ```

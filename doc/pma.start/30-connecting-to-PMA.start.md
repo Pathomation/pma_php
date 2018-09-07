@@ -1,8 +1,5 @@
 # **Connecting to PMA.start**
 
-- [Load library](#load-library)
-- [Connecting to PMA.start](#connecting-to-pma.start)
-
 
 ## Load library
 ```
