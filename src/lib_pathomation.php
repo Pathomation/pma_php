@@ -78,6 +78,36 @@ class Core {
 	}
             
 	/** Internal use only */
+	public static function _pma_send_post_request($url, $jsonData) {
+		// echo "URL: " . $url . " <br> \n";
+		//Initiate cURL.
+		$ch = curl_init($url);
+		//Encode the array into JSON.
+		$jsonDataEncoded = json_encode($jsonData);
+		
+		//print_r($jsonDataEncoded);
+		
+		//Tell cURL that we want to send a POST request.
+		curl_setopt($ch, CURLOPT_POST, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Accept: application/json')); 
+		
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		//Execute the request
+		$result = curl_exec($ch);
+		
+		if (curl_error($ch)) {
+			trigger_error('Curl Error:' . curl_error($ch));
+		}
+		
+		curl_close ($ch);
+		
+		return $result;		
+	}
+	
+	/** Internal use only */
 	private static function _pma_is_lite($pmacoreURL = null)
 	{
 		if ($pmacoreURL == null) {
@@ -717,6 +747,65 @@ class CoreAdmin {
 			return false;
 		}
 		return true;
+	}
+
+	public static function AddS3RootDirectory($ASessionID, $s3accessKey, $s3secretKey, $alias, $s3path, $description = "Root dir created through lib_php", $isPublic = False, $isOffline = False) {
+		if (Core::$_pma_pmacoreliteSessionID == $ASessionID) {
+			throw new \BadMethodCallException("PMA.start doesn't support AddS3RootDirectory()");
+		}
+		
+		$url = Core::_pma_url($ASessionID)."admin/json/CreateAmazonS3RootDirectory";
+
+		$jsonData = array(
+		 "sessionID" => $ASessionID,
+		  "rootDirectory"=> array(
+			"AccessKey"=> $s3accessKey,
+			"SecretKey"=> $s3secretKey,
+			"Alias"=> $alias,
+			"Description"=> $description,
+			"Offline"=> $isOffline,
+			"Public"=> $isPublic,
+			"Path"=> $s3path
+			)
+		);
+		 
+		$ret_val = Core::_pma_send_post_request($url, $jsonData);
+		return $ret_val;
+	}
+	public static function GrantAccessToRootDirectory($ASessionID, $pmacoreUsername, $alias) {
+
+		if (Core::$_pma_pmacoreliteSessionID == $ASessionID) {
+			throw new \BadMethodCallException("PMA.start doesn't support GrantAccessToRootDirectory()");
+		}
+		
+		$url = Core::_pma_url($ASessionID)."admin/json/GrantRootDirAccess";
+
+		$jsonData = array(
+		 "sessionID"=> $ASessionID,
+		 "usernames"=> array($pmacoreUsername),
+		 "rootDirectories"=> array($alias)
+		);
+		 
+		$ret_val = Core::_pma_send_post_request($url, $jsonData);
+		return $ret_val;
+	}
+	
+	public static function DenyAccessToRootDirectory($ASessionID, $pmacoreUsername, $alias) {
+
+		if (Core::$_pma_pmacoreliteSessionID == $ASessionID) {
+			throw new \BadMethodCallException("PMA.start doesn't support DenyAccessToRootDirectory()");
+		}
+		
+		$url = Core::_pma_url($ASessionID)."admin/json/DenyRootDirAccess";
+
+		$jsonData = array(
+		 "sessionID"=> $ASessionID,
+		 "usernames"=> array($pmacoreUsername),
+		 "rootDirectories"=> array($alias)
+		);
+		 
+		$ret_val = Core::_pma_send_post_request($url, $jsonData);
+		return $ret_val;
 	}
 }
 
