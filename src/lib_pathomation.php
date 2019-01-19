@@ -370,7 +370,7 @@ class Core {
 	/**
 	Return an array of slides available to sessionID in the startDir directory
 	*/
-	public static function getSlides($startDir, $sessionID = null)
+	public static function getSlides($startDir, $sessionID = null, $recursive = false)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
 		if (pma::starts_with($startDir, "/")) {
@@ -389,8 +389,38 @@ class Core {
 		if (isset($json["Code"])) {
 			throw new Exception("get_slides from $startDir resulted in: ".$json["Message"]." (keep in mind that startDir is case sensitive!)");
 		} else {
-			$slides = $json;
+			$slides = $json;			
 		}
+		
+		if ( ((gettype($recursive) == "boolean") && ($recursive == True)) 
+			|| ((gettype($recursive) == "integer") && ($recursive > 0)) ) {		
+			foreach (self::getDirectories($startDir, $sessionID) as $dir) {
+				if (gettype($recursive) == "boolean") {
+					$new_slides = self::getSlides($dir, $sessionID, $recursive);
+					if (is_array($slides)) {
+						if (is_array($new_slides)) {
+							$slides = array_merge($slides, $new_slides);
+						}
+					} else {
+						if (is_array($new_slides)) {
+							$slides = $new_slides;
+						}
+					}
+				} elseif (gettype($recursive) == "integer") {
+					$new_slides = self::getSlides($dir, $sessionID, $recursive - 1);
+					if (is_array($slides)) {
+						if (is_array($new_slides)) {
+							$slides = array_merge($slides, $new_slides);
+						}
+					} else {
+						if (is_array($new_slides)) {
+							$slides = $new_slides;
+						}
+					}
+				}
+			}
+		}
+		
 		return $slides;
 	}
 
@@ -469,6 +499,176 @@ class Core {
 			}
 		}
 		return self::$_pma_slideinfos[$sessionID][$slideRef];
+	}
+
+	/**
+	Determine the maximum zoomlevel that still represents an optical magnification
+	*/
+	public static function getMaxZoomlevel($slideRef, $sessionID = null) {
+		$info = self::getSlideInfo($slideRef, $sessionID);
+		if ($info == null) {
+			throw new Exception("Unable to get information for".$slideRef." from ".$sessionID);
+			return 0;
+		} else {
+			/*if ("MaxZoomLevel" in info) {
+				try:
+					return int(info["MaxZoomLevel"])
+				except:
+					print("Something went wrong consulting the MaxZoomLevel key in info{} dictionary; value =", info["MaxZoomLevel"])
+					return 0
+			} else {
+			try:
+				return int(info["NumberOfZoomLevels"])
+			except:
+				print("Something went wrong consulting the NumberOfZoomLevels key in info{} dictionary; value =", info["NumberOfZoomLevels"])
+				return 0
+			}*/
+		}
+	}
+	
+	/**
+	Obtain a list with all zoomlevels, starting with 0 and up to and including max_zoomlevel
+	Use min_number_of_tiles argument to specify that you're only interested in zoomlevels that include at lease a given number of tiles
+	*/
+	public static function getZoomlevelsList($slideRef, $sessionID = None, $minNumberOfTiles = 0) {
+		//return sorted(list(get_zoomlevels_dict($slideRef, $sessionID, $minNumberOfTiles).keys()))
+	}
+	
+	/**
+	Obtain a dictionary with the number of tiles per zoomlevel.
+	Information is returned as (x, y, n) tupels per zoomlevel, with 
+		x = number of horizontal tiles, 
+		y = number of vertical tiles, 
+		n = total number of tiles at specified zoomlevel (x * y)
+	Use min_number_of_tiles argument to specify that you're only interested in zoomlevels that include at lease a given number of tiles
+	*/
+	public static function getZoomlevelsDict($slideRef, $sessionID = null, $minNumberOfTiles = 0) {
+	/*zoomlevels = list(range(0, get_max_zoomlevel(slideRef, sessionID) + 1))
+	dimensions = [ get_number_of_tiles(slideRef, z, sessionID) for z in zoomlevels if get_number_of_tiles(slideRef, z, sessionID)[2] > min_number_of_tiles]
+	d = dict(zip(zoomlevels[-len(dimensions):], dimensions))
+	
+	
+	return d*/
+	}
+	
+	
+	/**
+	Retrieve the physical dimension in terms of pixels per micrometer.
+	When zoomlevel is left to its default value of None, dimensions at the highest zoomlevel are returned 
+	(in effect returning the "native" resolution at which the slide was registered)
+	*/
+	public static function getPixelsPerMicrometer($slideRef, $zoomlevel = null, $sessionID = null) {
+
+		$maxZoomLevel = self::getMaxZoomlevel($slideRef, $sessionID);
+		$info = self::getSlideInfo($slideRef, $sessionID);
+		$xppm = $info["MicrometresPerPixelX"];
+		$yppm = $info["MicrometresPerPixelY"];
+	
+	/*if (zoomlevel is None or zoomlevel == maxZoomLevel):
+		return (float(xppm), float(yppm))
+	else:
+		factor = 2 ** (zoomlevel - maxZoomLevel)
+		return (float(xppm) / factor, float(yppm) / factor)		*/
+	}
+	
+	/**
+	Get the total dimensions of a slide image at a given zoomlevel
+	*/
+	public static function getPixelDimensions($slideRef, $oomlevel = null, $sessionID = null) {
+	
+		$maxZoomLevel = self::getMaxZoomlevel($slideRef, $sessionID);
+		$info = self::getSlideInfo($slideRef, $sessionID);
+		/*if (zoomlevel is None or zoomlevel == maxZoomLevel) {
+			return (int(info["Width"]), int(info["Height"]))
+		} else {
+		factor = 2 ** (zoomlevel - maxZoomLevel)
+		}
+		return (int(info["Width"]) * factor, int(info["Height"]) * factor)
+		*/
+	}
+	
+	/**
+	Determine the number of tiles needed to reconstitute a slide at a given zoomlevel
+	*/
+	public static function getNumberOfTiles($slideRef, $zoomlevel = null, $sessionID = null) {
+	
+		$pixels = self::getPixelDimensions($slideRef, $zoomlevel, $sessionID);
+		$sz = self::getTileSize($sessionID);
+		$xtiles = int(ceil($pixels[0] / $sz[0]));
+		$ytiles = int(ceil($pixels[1] / $sz[0]));
+		$ntiles = $xtiles * $ytiles;
+		return array(xtiles, ytiles, ntiles);
+	}
+	
+	/**
+	Determine the physical dimensions of the sample represented by the slide.
+	This is independent of the zoomlevel: the physical properties don't change because the magnification changes
+	*/
+	public static function getPhysicalDimensions($slideRef, $sessionID = null) {
+		$ppmData = self::getPixelsPerMicrometer($slideRef, $sessionID);
+		$pixelSz = self::getPixelDimensions($slideRef, $sessionID);
+		return array($pixelSz[0] * $ppmData[0], $pixelSz[1] * $ppmData[1]);
+	}
+	
+	/**
+	Number of fluorescent channels for a slide (when slide is brightfield, return is always 1)
+	*/
+	public static function getNumberOfChannels($slideRef, $sessionID = null) {
+		$info = self::getSlideInfo($slideRef, $sessionID);
+		$channels = $info["TimeFrames"][0]["Layers"][0]["Channels"];
+		return count($channels);
+	}
+
+	/**	
+	Number of (z-stacked) layers for a slide
+	*/
+	public static function getNumberOfLayers($slideRef, $sessionID = null) {
+		$info = self::getSlideInfo($slideRef, $sessionID);
+		$layers = $info["TimeFrames"][0]["Layers"];
+		return count($layers);
+	}
+		
+	public static function getNumberOfZStackLayers($slideRef, $sessionID = null) {
+		return self::getNumberOfLayers($slideRef, $sessionID);
+	}
+
+	/** 
+	Determine whether a slide is a fluorescent image or not
+	*/
+	public static function isFluorescent($slideRef, $sessionID = null) {
+		return self::getNumberOfChannels($slideRef, $sessionID) > 1;
+	}
+
+	/**
+	Determine whether a slide contains multiple (stacked) layers or not
+	*/
+	public static function isMultiLayer($slideRef, $sessionID = null) {
+		
+		return self::getNumberOfLayers($slideRef, $sessionID) > 1;
+	}
+	
+	/** 
+	Determine whether a slide is a z-stack or not
+	*/
+	public static function isZStack($slideRef, $sessionID = null) {
+	
+		return self::isMultiLayer($slideRef, $sessionID);
+	}
+	
+	/**
+	Get the magnification represented at a certain zoomlevel
+	*/
+	public static function getMagnification($slideRef, $zoomlevel = null, $exact = False, $sessionID = null) {
+		$ppm = self::getPixelsPerMicrometer($slideRef, $zoomlevel, $sessionID)[0];
+		if ($ppm > 0) {
+			if ($exact === True) {
+				return round(40 / ($ppm / 0.25));
+			} else {
+				return round(40 / round($ppm / 0.25));
+			}
+		} else {
+			return 0;
+		}
 	}
 	
 	/**
@@ -772,6 +972,29 @@ class CoreAdmin {
 		$ret_val = Core::_pma_send_post_request($url, $jsonData);
 		return $ret_val;
 	}
+
+	public static function AddLocalRootDirectory($ASessionID, $alias, $localpath, $description = "Root dir created through lib_php", $isPublic = False, $isOffline = False) {
+		if (Core::$_pma_pmacoreliteSessionID == $ASessionID) {
+			throw new \BadMethodCallException("PMA.start doesn't support AddLocalRootDirectory()");
+		}
+		
+		$url = Core::_pma_url($ASessionID)."admin/json/CreateFileSystemRootDirectory";
+
+		$jsonData = array(
+		 "sessionID" => $ASessionID,
+		  "rootDirectory"=> array(
+			"Alias"=> $alias,
+			"Description"=> $description,
+			"Offline"=> $isOffline,
+			"Public"=> $isPublic,
+			"Path"=> $localpath
+			)
+		);
+		 
+		$ret_val = Core::_pma_send_post_request($url, $jsonData);
+		return $ret_val;
+	}
+	
 	public static function GrantAccessToRootDirectory($ASessionID, $pmacoreUsername, $alias) {
 
 		if (Core::$_pma_pmacoreliteSessionID == $ASessionID) {
