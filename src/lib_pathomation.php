@@ -948,7 +948,26 @@ class CoreAdmin {
 		}
 		return true;
 	}
+	public static function UserExists($ASessionID, $login) {
+		if (Core::$_pma_pmacoreliteSessionID == $ASessionID) {
+			throw new \BadMethodCallException("PMA.start doesn't support UserExists()");
+		}
 
+		$url = Core::_pma_url($ASessionID)."admin/json/SearchUsers?sessionID=".PMA::_pma_q($ASessionID)."&source=local&query=".PMA::_pma_q($login);
+		try {
+			$contents = @file_get_contents($url);
+		} catch (Exception $ex) {
+			throw new Exception("Unable to determine if user exists");
+			$contents = "";
+		}
+
+		$json = json_decode($contents, true);
+		if (isset($json["d"])) {
+			$json = $json["d"];
+		}
+		return count($json) > 0;
+	}
+	
 	public static function AddS3RootDirectory($ASessionID, $s3accessKey, $s3secretKey, $alias, $s3path, $description = "Root dir created through lib_php", $isPublic = False, $isOffline = False) {
 		if (Core::$_pma_pmacoreliteSessionID == $ASessionID) {
 			throw new \BadMethodCallException("PMA.start doesn't support AddS3RootDirectory()");
