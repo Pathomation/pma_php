@@ -478,29 +478,61 @@ class Core {
 	public static function getSlideInfo($slideRef, $sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
-		if (PMA::starts_with($slideRef, "/")) {
-			$slideRef = substr($slideRef, 1);
+		$infos = Core::GetSlidesInfo(array($slideRef), $sessionID);
+		return $infos[$slideRef];
+	}
+
+	public static function GetSlidesInfo($slideRefs, $sessionID = null) {
+		if (!is_array($slideRefs)) {
+			$slideRefs = array($slideRefs);
+		}
+		$sessionID = self::_pma_session_id($sessionID);
+
+		
+		$slideRefs_new = array();
+		foreach ($slideRefs as $sl) {
+			$sl_new = $sl;
+			if (PMA::starts_with($sl_new, "/")) {
+				$sl_new = substr($sl_new, 1);
+			}
+			if (!isset(self::$_pma_slideinfos[$sessionID][$sl_new])) {
+				array_push($slideRefs_new, $sl_new);
+			}			
 		}
 		
-		if (!isset(self::$_pma_slideinfos[$sessionID][$slideRef])) {
-			$url = self::_pma_api_url($sessionID)."GetImageInfo?SessionID=".PMA::_pma_q($sessionID)."&pathOrUid=".PMA::_pma_q($slideRef);
-			$r = file_get_contents($url);
+		if (count($slideRefs_new) > 0) {
+			$url = Core::_pma_url($sessionID)."api/json/GetImagesInfo";
+			$jsonData = array(
+				"sessionID"=> $sessionID,
+				"pathOrUids"=> $slideRefs_new
+			);
+			$ret_val = Core::_pma_send_post_request($url, $jsonData);
 
-			$json = json_decode($r, true);
+			$json = json_decode($ret_val, true);
 			if (isset($json["d"])) {
 				$json = $json["d"];
 			}
 
-			self::$_pma_amount_of_data_downloaded[$sessionID] += strlen($r);
+			self::$_pma_amount_of_data_downloaded[$sessionID] += strlen($ret_val);
 			if (isset($json["Code"])) {
-				throw new Exception("ImageInfo to " + $slideRef + " resulted in: " + $json["Message"] + " (keep in mind that slideRef is case sensitive!)");
+				throw new Exception("ImageInfos to " + $slideRefs + " resulted in: " + $json["Message"] + " (keep in mind that slideRef is case sensitive!)");
 			} else {
-				self::$_pma_slideinfos[$sessionID][$slideRef] = $json;
+				if (count($json) > 0) {
+					foreach ($json as $el) {
+						self::$_pma_slideinfos[$sessionID][$el["Filename"]] = $el;
+						self::$_pma_slideinfos[$sessionID][$el["UID"]] = $el;
+					}
+				}
 			}
 		}
-		return self::$_pma_slideinfos[$sessionID][$slideRef];
-	}
 
+		$ret_value = array();
+		foreach ($slideRefs as $sl) {
+			$ret_value[$sl] = self::$_pma_slideinfos[$sessionID][$sl];
+		}
+		
+		return $ret_value;
+	}
 	/**
 	Determine the maximum zoomlevel that still represents an optical magnification
 	*/
