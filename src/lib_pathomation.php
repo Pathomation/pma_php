@@ -78,43 +78,13 @@ class Core {
 	}
             
 	/** Internal use only */
-	public static function _pma_send_post_request($url, $jsonData) {
-		// echo "URL: " . $url . " <br> \n";
-		//Initiate cURL.
-		$ch = curl_init($url);
-		//Encode the array into JSON.
-		$jsonDataEncoded = json_encode($jsonData);
-		
-		//print_r($jsonDataEncoded);
-		
-		//Tell cURL that we want to send a POST request.
-		curl_setopt($ch, CURLOPT_POST, 1);
-		//Attach our encoded JSON string to the POST fields.
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
-		//Set the content type to application/json
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Accept: application/json')); 
-		
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		//Execute the request
-		$result = curl_exec($ch);
-		
-		if (curl_error($ch)) {
-			trigger_error('Curl Error:' . curl_error($ch));
-		}
-		
-		curl_close ($ch);
-		
-		return $result;		
-	}
-	
-	/** Internal use only */
 	private static function _pma_is_lite($pmacoreURL = null)
 	{
 		if ($pmacoreURL == null) {
 			$pmacoreURL = self::$_pma_pmacoreliteURL;
 		}
 		
-		$url = self::_pma_join($pmacoreURL, "api/json/IsLite");
+		$url = PMA::_pma_join($pmacoreURL, "api/json/IsLite");
 		$contents = "";
 		
 		try {
@@ -148,21 +118,7 @@ class Core {
 			return null;
 		}
 		// remember, _pma_url is guaranteed to return a URL that ends with "/"
-		return self::_pma_join($url, "api/json/");
-	}
-    
-	/** Internal use only */
-	private static function _pma_join($dir1, $dir2)
-	{
-		$dir1 = str_replace("\\", "/", $dir1);
-		$dir2 = str_replace("\\", "/", $dir2);
-		if (PMA::ends_with($dir1, "/")) {
-			$dir1 = substr($dir1, 0, strlen($dir1) - 1);
-		}
-		if (PMA::starts_with($dir2, "/")) {
-			$dir2 = substr($dir2, 1);
-		}
-		return join("/", array($dir1, $dir2));
+		return PMA::_pma_join($url, "api/json/");
 	}
     
 	# end internal module helper variables and functions
@@ -189,7 +145,7 @@ class Core {
 		}
 		// purposefully DON'T use helper function _pma_api_url() here:
 		// why? because GetVersionInfo can be invoked WITHOUT a valid SessionID; _pma_api_url() takes session information into account
-		$url = self::_pma_join($pmacoreURL, "api/json/GetVersionInfo");
+		$url = PMA::_pma_join($pmacoreURL, "api/json/GetVersionInfo");
 		$contents = "";
 		try {
 			@$contents = file_get_contents($url);
@@ -225,7 +181,7 @@ class Core {
 		
 		// purposefully DON'T use helper function _pma_api_url() here:
 		// why? Because_pma_api_url() takes session information into account (which we don't have yet)
-		$url = self::_pma_join($pmacoreURL, "api/json/authenticate?caller=SDK.PHP");
+		$url = PMA::_pma_join($pmacoreURL, "api/json/authenticate?caller=SDK.PHP");
 		if ($pmacoreUsername != "") {
 			$url .= "&username=".PMA::_pma_q($pmacoreUsername);
 		}
@@ -506,7 +462,7 @@ class Core {
 				"sessionID"=> $sessionID,
 				"pathOrUids"=> $slideRefs_new
 			);
-			$ret_val = Core::_pma_send_post_request($url, $jsonData);
+			$ret_val = PMA::_pma_send_post_request($url, $jsonData);
 
 			$json = json_decode($ret_val, true);
 			if (isset($json["d"])) {
@@ -1020,7 +976,7 @@ class CoreAdmin {
 			)
 		);
 		 
-		$ret_val = Core::_pma_send_post_request($url, $jsonData);
+		$ret_val = PMA::_pma_send_post_request($url, $jsonData);
 		return $ret_val;
 	}
 
@@ -1042,7 +998,7 @@ class CoreAdmin {
 			)
 		);
 		 
-		$ret_val = Core::_pma_send_post_request($url, $jsonData);
+		$ret_val = PMA::_pma_send_post_request($url, $jsonData);
 		return $ret_val;
 	}
 	
@@ -1060,7 +1016,7 @@ class CoreAdmin {
 		 "rootDirectories"=> array($alias)
 		);
 		 
-		$ret_val = Core::_pma_send_post_request($url, $jsonData);
+		$ret_val = PMA::_pma_send_post_request($url, $jsonData);
 		return $ret_val;
 	}
 	
@@ -1078,8 +1034,55 @@ class CoreAdmin {
 		 "rootDirectories"=> array($alias)
 		);
 		 
-		$ret_val = Core::_pma_send_post_request($url, $jsonData);
+		$ret_val = PMA::_pma_send_post_request($url, $jsonData);
 		return $ret_val;
+	}
+}
+
+/**
+Wraps around PMA.control's API
+*/
+class Control {
+	const version = PMA::version;
+	
+	const pma_session_role_supervisor = 1;
+	const pma_session_role_trainee = 2;
+	const pma_session_role_observer = 3;
+
+	const pma_interaction_mode_locked = 0;
+	const pma_interaction_mode_test_active = 1;
+	const pma_interaction_mode_review = 2;
+	const pma_interaction_mode_consensus_view = 3;
+	const pma_interaction_mode_browse = 4;
+	const pma_interaction_mode_board = 5;
+	const pma_interaction_mode_consensus_score_edit = 6;
+	const pma_interaction_mode_self_review = 7;
+	const pma_interaction_mode_self_test = 8;
+	const pma_interaction_mode_hidden = 9;
+	const pma_interaction_mode_clinical_information_edit = 10;
+
+	
+	/**
+	Get version info from PMA.control instance running at $pmacontrolURL
+	*/
+	public static function getVersionInfo($pmacontrolURL)
+	{
+		// purposefully DON'T use helper function _pma_api_url() here:
+		// why? because GetVersionInfo can be invoked WITHOUT a valid SessionID; _pma_api_url() takes session information into account
+		$url = PMA::_pma_join($pmacontrolURL, "api/version");
+		$contents = "";
+		try {
+			@$contents = file_get_contents($url);
+		} catch (Exception $e) {
+			return null;
+		}
+
+		$json = json_decode($contents, true);
+		if (isset($json["d"])) {
+			$json = $json["d"];
+		}
+
+		return $json;
 	}
 }
 
@@ -1087,8 +1090,8 @@ class CoreAdmin {
 Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
 */
 class PMA {
-	/** returns the current version of the library (2.0.0.85) */
-	const version = "2.0.0.85";
+	/** returns the current version of the library (2.0.0.28) */
+	const version = "2.0.0.28";
 
 	/** Internal use only */
 	public static function ends_with($wholestring, $suffix)
@@ -1103,6 +1106,20 @@ class PMA {
 	}
 
 	/** Internal use only */
+	public static function _pma_join($dir1, $dir2)
+	{
+		$dir1 = str_replace("\\", "/", $dir1);
+		$dir2 = str_replace("\\", "/", $dir2);
+		if (self::ends_with($dir1, "/")) {
+			$dir1 = substr($dir1, 0, strlen($dir1) - 1);
+		}
+		if (self::starts_with($dir2, "/")) {
+			$dir2 = substr($dir2, 1);
+		}
+		return join("/", array($dir1, $dir2));
+	}
+
+	/** Internal use only */
 	public static function _pma_q($arg)
 	{
 		if ($arg == null) {
@@ -1111,4 +1128,35 @@ class PMA {
 			return urlencode($arg);
 		}
 	}	
+
+	/** Internal use only */
+	public static function _pma_send_post_request($url, $jsonData) {
+		// echo "URL: " . $url . " <br> \n";
+		//Initiate cURL.
+		$ch = curl_init($url);
+		//Encode the array into JSON.
+		$jsonDataEncoded = json_encode($jsonData);
+		
+		//print_r($jsonDataEncoded);
+		
+		//Tell cURL that we want to send a POST request.
+		curl_setopt($ch, CURLOPT_POST, 1);
+		//Attach our encoded JSON string to the POST fields.
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+		//Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Accept: application/json')); 
+		
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		//Execute the request
+		$result = curl_exec($ch);
+		
+		if (curl_error($ch)) {
+			trigger_error('Curl Error:' . curl_error($ch));
+		}
+		
+		curl_close ($ch);
+		
+		return $result;		
+	}
+	
 }
