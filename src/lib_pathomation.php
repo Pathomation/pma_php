@@ -1147,14 +1147,29 @@ class Control {
 		return $user_dict;
 	}
 	
+	/**
+	Retrieve (training) sessions (possibly filtered by project ID), return a dictionary of session IDs and titles
+	*/
+	public static function getSessionTitlesAssoc($pmacontrolURL, $pmacontrolProjectID, $pmacoreSessionID) {
+		$dct = array();
+		$all = self::_pma_get_sessions($pmacontrolURL, $pmacoreSessionID);
+		foreach ($all as $sess) {
+			if ($pmacontrolProjectID == null) {
+				$dct[$sess["Id"]] = $sess["Title"];
+			} elseif ($pmacontrolProjectID == $sess["ModuleId"]) {
+				$dct[$sess["Id"]] = $sess["Title"];
+			}
+		}
+		return $dct;
+	}
 }
 
 /**
 Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
 */
 class PMA {
-	/** returns the current version of the library (2.0.0.28) */
-	const version = "2.0.0.28";
+	/** returns the current version of the library (2.0.0.29) */
+	const version = "2.0.0.29";
 
 	/** Internal use only */
 	public static function ends_with($wholestring, $suffix)
