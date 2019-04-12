@@ -1116,7 +1116,7 @@ class Control {
 			"LogoPath" => $sess["LogoPath"],
 			"StartsOn" => $sess["StartsOn"],
 			"EndsOn" => $sess["EndsOn"],
-			"ProjectId" => $sess["ModuleId"],
+			"ProjectId" => $sess["ProjectId"],
 			"State" => $sess["State"],
 			"CaseCollections" => array(),
 			"NumberOfParticipants" => count($sess["Participants"])
@@ -1146,6 +1146,9 @@ class Control {
 		}
 		return $user_dict;
 	}
+	public static function getSessionTitles($pmacontrolURL, $pmacontrolProjectID, $pmacoreSessionID) {
+		return array_values(self::getSessionTitlesAssoc($pmacontrolURL, $pmacontrolProjectID, $pmacoreSessionID));
+	}
 	
 	/**
 	Retrieve (training) sessions (possibly filtered by project ID), return a dictionary of session IDs and titles
@@ -1156,7 +1159,7 @@ class Control {
 		foreach ($all as $sess) {
 			if ($pmacontrolProjectID == null) {
 				$dct[$sess["Id"]] = $sess["Title"];
-			} elseif ($pmacontrolProjectID == $sess["ModuleId"]) {
+			} elseif ($pmacontrolProjectID == $sess["ProjectId"]) {
 				$dct[$sess["Id"]] = $sess["Title"];
 			}
 		}
@@ -1168,8 +1171,8 @@ class Control {
 Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
 */
 class PMA {
-	/** returns the current version of the library (2.0.0.29) */
-	const version = "2.0.0.29";
+	/** returns the current version of the library (2.0.0.30) */
+	const version = "2.0.0.30";
 
 	/** Internal use only */
 	public static function ends_with($wholestring, $suffix)
