@@ -1,0 +1,24 @@
+{
+    "name": "pathomation/pma-php",
+    "description": "PHP wrapper library for PMA.start, a universal viewier for whole slide imaging and microscopy",
+    "keywords": ["wsi", "whole", "slide", "imaging", "gigapixel", "microscopy", "histology", "pathology"],
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Yves Sucaet",
+            "email": "yves@pathomation.com"
+        }
+    ],
+    "type": "library",
+    "require": {
+		"php": ">=7.0"
+    },
+    "require-dev": {
+		"phpunit/phpunit": "6.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pathomation\\PmaPhp\\": "src/"
+        }
+    }
+}
