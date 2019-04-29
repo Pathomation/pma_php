@@ -31,6 +31,7 @@ class Core {
 		}
 	}
 
+	
 	/** Internal use only */
 	private static function _pma_first_session_id()
 	{
