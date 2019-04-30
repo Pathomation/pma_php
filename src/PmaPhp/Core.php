@@ -31,7 +31,6 @@ class Core {
 		}
 	}
 
-	
 	/** Internal use only */
 	private static function _pma_first_session_id()
 	{
@@ -719,5 +718,32 @@ class Core {
 		self::$_pma_amount_of_data_downloaded[$sessionID] += strlen(serialize($img));
 		return $img;
 	}		
+
+	/**
+	Obtain all files actually associated with a specific slide
+	This is most relevant with slides that are defined by multiple files, like MRXS or VSI
+	*/
+	public static function enumerateFilesForSlide($slideRef, $sessionID = null) {
+		$sessionID = Core::_pma_session_id($sessionID);
+		
+		$slideRef = ltrim($slideRef, "/");	
+
+		$url = Core::_pma_api_url($sessionID, False)."EnumerateAllFilesForSlide?sessionID=".PMA::_pma_q($sessionID)."&pathOrUid=".PMA::_pma_q($slideRef);
+
+		$contents= file_get_contents($url);
+		
+		$json = json_decode($contents, true);
+		if (isset($json["d"])) {
+			$json = $json["d"];
+		}
+		
+		self::$_pma_amount_of_data_downloaded[$sessionID] += strlen($contents);
+		if (isset($json["Code"])) {
+			throw new Exception("enumerate_files_for_slide on  ".$slideRef." resulted in: ".$json["Message"]." (keep in mind that slideRef is case sensitive!)");
+		} else {
+			$files = $json;
+		}
+		return $files;
+	}
 }
  
