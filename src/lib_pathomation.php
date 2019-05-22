@@ -13,7 +13,7 @@ foreach (glob($pattern) as $filename) {
 
 use Pathomation\PmaPhp\PMA;
 
-if (PMA::_pma_debug === True) {
+if (PMA::$_pma_debug === True) {
 	echo "<p>PmaPhp classes successfully loaded</p>".PHP_EOL;
 }
 ?>

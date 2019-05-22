@@ -7,6 +7,8 @@ Commercial applications and tools can be found at http://www.pathomation.com
 
 namespace Pathomation\PmaPhp;
 
+use \Exception as Exception;
+
 /**
 Class that wraps around the free PMA.core.lite (the server component of PMA.start), as well as its commercial variant; the PMA.core product
 */
@@ -172,6 +174,9 @@ class Core {
 
 		if ($pmacoreURL == self::$_pma_pmacoreliteURL) {
 			if (self::_pma_is_lite()) {
+				self::$_pma_sessions[self::$_pma_pmacoreliteSessionID] = $pmacoreURL;
+				self::$_pma_slideinfos[self::$_pma_pmacoreliteSessionID] = [];
+				self::$_pma_amount_of_data_downloaded[self::$_pma_pmacoreliteSessionID] = 0;
 				// no point authenticating localhost / PMA.core.lite
 				return self::$_pma_pmacoreliteSessionID;
 			} else {
@@ -333,8 +338,11 @@ class Core {
 			$startDir = substr($startDir, 1);
 		}
 		$url = self::_pma_api_url($sessionID)."GetFiles?sessionID=".PMA::_pma_q($sessionID)."&path=".PMA::_pma_q($startDir);
-		$contents = file_get_contents($url);
-
+		$contents = @file_get_contents($url);
+		if ($contents === FALSE) {
+			throw new Exception("get_slides wasn't able to get any content from $startDir (keep in mind that startDir is case sensitive!)");
+		}
+		
 		$json = json_decode($contents, true);
 		if (isset($json["d"])) {
 			$json = $json["d"];
@@ -463,7 +471,6 @@ class Core {
 				"pathOrUids"=> $slideRefs_new
 			);
 			$ret_val = PMA::_pma_send_post_request($url, $jsonData);
-
 			$json = json_decode($ret_val, true);
 			if (isset($json["d"])) {
 				$json = $json["d"];
@@ -481,7 +488,7 @@ class Core {
 				}
 			}
 		}
-
+		
 		$ret_value = array();
 		foreach ($slideRefs as $sl) {
 			$ret_value[$sl] = self::$_pma_slideinfos[$sessionID][$sl];

@@ -13,9 +13,9 @@ Wraps around PMA.control's API
 class Control {
 	const version = PMA::version;
 	
-	const pma_session_role_supervisor = 1;
-	const pma_session_role_trainee = 2;
-	const pma_session_role_observer = 3;
+	const pma_training_session_role_supervisor = 1;
+	const pma_training_session_role_trainee = 2;
+	const pma_training_session_role_observer = 3;
 
 	const pma_interaction_mode_locked = 0;
 	const pma_interaction_mode_test_active = 1;
@@ -56,7 +56,7 @@ class Control {
 	/**
 	Retrieve a list of currently defined training sessions in PMA.control
 	*/
-	private static function _pma_get_sessions($pmacontrolURL, $pmacoreSessionID) {
+	private static function _pma_get_training_sessions($pmacontrolURL, $pmacoreSessionID) {
 		$url = PMA::_pma_join($pmacontrolURL, "api/Sessions?sessionID=".PMA::_pma_q($pmacoreSessionID));
 		try {
 			@$r = file_get_contents($url);
@@ -77,7 +77,7 @@ class Control {
 	/**
 	Helper method to convert a JSON representation of a PMA.control training session to a proper Python-esque structure
 	*/
-	private static function _pma_format_session_properly($sess) {
+	private static function _pma_format_training_session_properly($sess) {
 		$sess_data = array(
 			"Id" => $sess["Id"],
 			"Title" => $sess["Title"],
@@ -100,10 +100,10 @@ class Control {
 	*/
 	public static function getAllParticipants($pmacontrolURL, $pmacoreSessionID) 
 	{
-		$full_sessions = self::_pma_get_sessions($pmacontrolURL, $pmacoreSessionID);
+		$full_sessions = self::_pma_get_training_sessions($pmacontrolURL, $pmacoreSessionID);
 		$user_dict = array();
 		foreach ($full_sessions as $sess) {
-			$s = self::_pma_format_session_properly($sess);
+			$s = self::_pma_format_training_session_properly($sess);
 			foreach ($sess["Participants"] as $part) {
 				if (!(isset($user_dict[$part["User"]]))) {
 					$user_dict[$part["User"]] = array();
@@ -114,16 +114,16 @@ class Control {
 		}
 		return $user_dict;
 	}
-	public static function getSessionTitles($pmacontrolURL, $pmacontrolProjectID, $pmacoreSessionID) {
-		return array_values(self::getSessionTitlesAssoc($pmacontrolURL, $pmacontrolProjectID, $pmacoreSessionID));
+	public static function getTrainingSessionTitles($pmacontrolURL, $pmacontrolProjectID, $pmacoreSessionID) {
+		return array_values(self::getTrainingSessionTitlesAssoc($pmacontrolURL, $pmacontrolProjectID, $pmacoreSessionID));
 	}
 	
 	/**
 	Retrieve (training) sessions (possibly filtered by project ID), return a dictionary of session IDs and titles
 	*/
-	public static function getSessionTitlesAssoc($pmacontrolURL, $pmacontrolProjectID, $pmacoreSessionID) {
+	public static function getTrainingSessionTitlesAssoc($pmacontrolURL, $pmacontrolProjectID, $pmacoreSessionID) {
 		$dct = array();
-		$all = self::_pma_get_sessions($pmacontrolURL, $pmacoreSessionID);
+		$all = self::_pma_get_training_sessions($pmacontrolURL, $pmacoreSessionID);
 		foreach ($all as $sess) {
 			if ($pmacontrolProjectID == null) {
 				$dct[$sess["Id"]] = $sess["Title"];
