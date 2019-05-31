@@ -1,6 +1,6 @@
 <?php
 // modify the following three lines for your specific circumstances:
-$pma_core_server = "http://server/core";
+$pma_core_server = "http://server/pma.core.2";
 $pma_core_user = "user";
 $pma_core_pass = "secret";
 
@@ -16,7 +16,7 @@ if (!defined('STDIN')) {
 	
 	$even_more_parts = explode(".", implode(" ", $more_parts));
 	array_pop($even_more_parts);
-		
+	
 	$title = implode(".", $even_more_parts);
 	?>
 <html>
