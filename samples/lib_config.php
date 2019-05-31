@@ -1,16 +1,18 @@
 <?php
 // modify the following three lines for your specific circumstances:
-$pma_core_server = "http://my_server/pma.core";
-$pma_core_user = "user";
-$pma_core_pass = "secret";
+$pma_core_server = "http://dev.pathomation.com:8081/test/pma.core.2";
+$pma_core_user = "admin";
+$pma_core_pass = "admin";
 
+$aws_key = "";
+$aws_secret = "";
 
 // stay away from the lines below; they include helper function to allow sample code to run in CLI as well as web-mode.
 if (!defined('STDIN')) {
 	$parts = explode(DIRECTORY_SEPARATOR, $_SERVER['SCRIPT_FILENAME']);
-	
-	$more_parts = explode(" ", end($parts));
-	array_shift($more_parts);
+	ode(" ", end($parts));
+	array_shift($mor
+	$more_parts = exple_parts);
 	
 	$even_more_parts = explode(".", implode(" ", $more_parts));
 	array_pop($even_more_parts);
