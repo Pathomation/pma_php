@@ -1,8 +1,8 @@
 <?php
 // modify the following three lines for your specific circumstances:
-$pma_core_server = "http://dev.pathomation.com:8081/test/pma.core.2";
-$pma_core_user = "admin";
-$pma_core_pass = "admin";
+$pma_core_server = "http://server/core";
+$pma_core_user = "user";
+$pma_core_pass = "secret";
 
 $aws_key = "";
 $aws_secret = "";
