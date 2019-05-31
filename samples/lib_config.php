@@ -10,13 +10,13 @@ $aws_secret = "";
 // stay away from the lines below; they include helper function to allow sample code to run in CLI as well as web-mode.
 if (!defined('STDIN')) {
 	$parts = explode(DIRECTORY_SEPARATOR, $_SERVER['SCRIPT_FILENAME']);
-	ode(" ", end($parts));
-	array_shift($mor
-	$more_parts = exple_parts);
+	
+	$more_parts = explode(" ", end($parts));
+	array_shift($more_parts);
 	
 	$even_more_parts = explode(".", implode(" ", $more_parts));
 	array_pop($even_more_parts);
-	
+		
 	$title = implode(".", $even_more_parts);
 	?>
 <html>
