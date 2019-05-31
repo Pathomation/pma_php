@@ -3,7 +3,7 @@
 require "../../src/lib_pathomation.php"; 	// PMA.php library
 require "../lib_config.php"; 				// only needed for the purpose of these demos
 
-use Pathomation\Core;
+use Pathomation\PmaPhp\Core;
 
 $sessionID = Core::Connect($pma_core_server, $pma_core_user, $pma_core_pass);
 

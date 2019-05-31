@@ -3,7 +3,7 @@
 require "../../src/lib_pathomation.php"; 	// PMA.php library
 require "../lib_config.php"; 				// only needed for the purpose of these demos
 
-use Pathomation\Core;
+use Pathomation\PmaPhp\Core;
 
 echo "You are running PMA.core version ".Core::getVersionInfo($pma_core_server)." at ".$pma_core_server.$newline;
 
