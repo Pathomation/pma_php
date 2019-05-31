@@ -394,7 +394,16 @@ class Core {
 	public static function getUID($slideRef, $sessionID = null)
 	{
 		$sessionID = self::_pma_session_id($sessionID);
+		if ($sessionID == self::$_pma_pmacoreliteSessionID) {
+			if (Core::isLite()) {
+				throw new \BadMethodCallException("PMA.core.lite found running, but it doesn't slide UID generation");
+			} else {
+				throw new \BadMethodCallException("PMA.core.lite not found, and besides; it doesn't support slide UID generation anyway");
+			}
+		}
+		
 		$url = self::_pma_api_url($sessionID)."GetUID?sessionID=".PMA::_pma_q($sessionID)."&path=".PMA::_pma_q($slideRef);
+		
 		$contents = file_get_contents($url);
 
 		$json = json_decode($contents, true);

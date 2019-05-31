@@ -3,7 +3,7 @@
 require "../../src/lib_pathomation.php"; 	// PMA.php library
 require "../lib_config.php"; 				// only needed for the purpose of these demos
 
-use Pathomation\Core;
+use Pathomation\PmaPhp\Core;
 
 if (!Core::isLite()) {
 	// don't bother running this script if PMA.start isn't active
