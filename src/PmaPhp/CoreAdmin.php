@@ -76,7 +76,6 @@ class CoreAdmin {
 		}
 		
 		$url = Core::_pma_url($AdmSessionID)."admin?singleWsdl";
-		print($url);
 		$client = new \SoapClient($url);
 
 		try {	
