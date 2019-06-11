@@ -121,25 +121,30 @@ class CoreAdmin {
 		return count($json) > 0;
 	}
 	
-	public static function AddS3RootDirectory($AdmSessionID, $s3accessKey, $s3secretKey, $alias, $s3path, $description = "Root dir created through lib_php", $isPublic = False, $isOffline = False) {
+	public static function AddS3RootDirectory($AdmSessionID, $s3accessKey, $s3secretKey, $alias, $s3path, $instanceID, $description = "Root dir created through lib_php", $isPublic = False, $isOffline = False) {
 		if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
 			throw new \BadMethodCallException("PMA.start doesn't support AddS3RootDirectory()");
 		}
 		
-		$url = Core::_pma_url($AdmSessionID)."admin/json/CreateAmazonS3RootDirectory";
+		$url = Core::_pma_url($AdmSessionID)."admin/json/CreateRootDirectory";
 
-		$jsonData = array(
+		$jsonData = [
 		 "sessionID" => $AdmSessionID,
-		  "rootDirectory"=> array(
+		  "rootDirectory"=> [
 			"AccessKey"=> $s3accessKey,
 			"SecretKey"=> $s3secretKey,
 			"Alias"=> $alias,
 			"Description"=> $description,
 			"Offline"=> $isOffline,
 			"Public"=> $isPublic,
-			"Path"=> $s3path
-			)
-		);
+			"AmazonS3MountingPoints"=> array(
+			[
+			"AccessKey"=> $s3accessKey,
+			"SecretKey"=> $s3secretKey,
+			"Path"=> $s3path,
+			"InstanceId"=> $instanceID
+			])]
+		];
 		 
 		$ret_val = PMA::_pma_send_post_request($url, $jsonData);
 		return $ret_val;
