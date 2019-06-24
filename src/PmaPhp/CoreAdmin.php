@@ -121,19 +121,35 @@ class CoreAdmin {
 		return count($json) > 0;
 	}
 
-	function GetMountingPointInstances($server, $sessionId) {
+	function GetMountingPoints($AdmSessionID) {
 		if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-			throw new \BadMethodCallException("PMA.start doesn't support GetInstances()");
+			throw new \BadMethodCallException("PMA.start doesn't support GetMountingPoints()");
 		}
 		
-		$url = str_ireplace("//admin/", "/admin/", $server."/admin/json/GetInstances");	
+		$url = Core::_pma_url($AdmSessionID)."admin/json/GetInstances?sessionID=".PMA::_pma_q($AdmSessionID);
 		
-		$json = file_get_contents($url."?sessionID=".urlencode($sessionId));
+		$json = @file_get_contents($url);
 		if ($json == "") return null;
 		
-		$obj = json_decode($json);
+		$obj = json_decode($json, true);
+		if (isset($json["d"])) {
+			$json = $json["d"];
+		}
 		
 		return $obj;
+	}
+	function GetCurrentMountingPoint($AdmSessionID) {
+		if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
+			throw new \BadMethodCallException("PMA.start doesn't support GetCurrentMountingPoint()");
+		}
+
+		$mps = CoreAdmin::GetMountingPoints($AdmSessionID);
+		foreach ($mps as $mp) {
+			if ($mp["IsCurrent"] == 1) {
+				return $mp;
+			}
+		}
+		return null;
 	}
 	
 	public static function AddS3RootDirectory($AdmSessionID, $s3accessKey, $s3secretKey, $alias, $s3path, $instanceID, $description = "Root dir created through lib_php", $isPublic = False, $isOffline = False) {
