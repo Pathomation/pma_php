@@ -74,15 +74,15 @@ echo $newline;
 echo "Example 540 reserved for future user interaction samples".$newline;
 echo $newline;
 
-/* Example 550: get mounting points */
-echo "Available mounting points:".$newline;
-$mps = CoreAdmin::GetMountingPoints($sessionID);
+/* Example 550: get all PMA.core instances */
+echo "Available PMA.core instances associated with the current installation of PMA.core:".$newline;
+$mps = CoreAdmin::GetPmaCoreInstances($sessionID);
 print_r($mps);
 echo $newline;
 
 /* Example 560: get current mounting point */
-echo "Current mounting points:".$newline;
-$mp = CoreAdmin::GetCurrentMountingPoint($sessionID);
+echo "Current PMA.core instance information:".$newline;
+$mp = CoreAdmin::GetCurrentPmaCoreInstance($sessionID);
 print_r($mp);
 echo $newline;
 

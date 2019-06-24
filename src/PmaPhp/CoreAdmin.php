@@ -121,7 +121,7 @@ class CoreAdmin {
 		return count($json) > 0;
 	}
 
-	function GetMountingPoints($AdmSessionID) {
+	function GetPmaCoreInstances($AdmSessionID) {
 		if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
 			throw new \BadMethodCallException("PMA.start doesn't support GetMountingPoints()");
 		}
@@ -138,12 +138,12 @@ class CoreAdmin {
 		
 		return $obj;
 	}
-	function GetCurrentMountingPoint($AdmSessionID) {
+	function GetCurrentPmaCoreInstance($AdmSessionID) {
 		if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
 			throw new \BadMethodCallException("PMA.start doesn't support GetCurrentMountingPoint()");
 		}
 
-		$mps = CoreAdmin::GetMountingPoints($AdmSessionID);
+		$mps = CoreAdmin::GetPmaCoreInstances($AdmSessionID);
 		foreach ($mps as $mp) {
 			if ($mp["IsCurrent"] == 1) {
 				return $mp;
