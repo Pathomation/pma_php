@@ -191,6 +191,41 @@ class Core {
         
         return $json;
     }
+
+    public static function getAPIVersion($pmacoreURL = null)
+    {
+        if ($pmacoreURL == null) {
+            $pmacoreURL = Core::$_pma_pmacoreliteURL;
+        }
+        $url = PMA::_pma_join($pmacoreURL, "api/json/GetAPIVersion");
+        if (Core::$_pma_debug == true) {
+            echo $url.PHP_EOL;
+        }
+        $contents = "";
+        try {
+            @$contents = file_get_contents($url);
+        } catch (Exception $e) {
+            return null;
+        }
+        
+        $json = json_decode($contents, true);
+        if (isset($json["d"])) {
+            $json = $json["d"];
+        }
+        
+        return $json;
+    }
+
+    public static function getAPIVersionString($pmacoreURL = null)
+    {
+        $apiVersion = Core::getAPIVersion($pmacoreURL);
+        if (!is_null($apiVersion) && is_array($apiVersion))
+        {
+            return implode(".", $apiVersion);
+        }
+
+        return null;
+    }
     
     /**
     Attempt to connect to PMA.core instance; success results in a SessionID
