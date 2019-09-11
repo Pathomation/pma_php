@@ -264,6 +264,8 @@ class CoreAdmin {
         }
         
         $url = Core::_pma_url($AdmSessionID)."admin/json/CreateRootDirectory";
+		$currentInstanceId = CoreAdmin::GetCurrentInstance($AdmSessionID)["InstanceID"];
+		echo $currentInstanceId;
         
         $jsonData = array(
         "sessionID" => $AdmSessionID,
@@ -272,10 +274,10 @@ class CoreAdmin {
         "Description"=> $description,
         "Offline"=> $isOffline,
         "Public"=> $isPublic,
-        "FileSystemMountingPoints" => array(
+        "FileSystemMountingPoints" => array(array(
         	"Path"=> $localpath,
-        	"InstanceId" => ($instanceID == 0 ? CoreAdmin::GetCurrentInstance($AdmSessionID) : $instanceID)
-        	)
+        	"InstanceId" => ($instanceID == 0 ? $currentInstanceId : $instanceID)
+        	))
         	)
         );
         
