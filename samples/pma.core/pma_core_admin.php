@@ -49,7 +49,6 @@ print_r(CoreAdmin::GetInstances($sessionID));
 print_r(CoreAdmin::GetCurrentInstance($sessionID));
 /* print_r(CoreAdmin::AddLocalRootDirectory($sessionID, "test", "C:")); */
 
-
 /* Example 510: add user */
 
 $new_user = "user".rand();
@@ -94,5 +93,19 @@ $mp = CoreAdmin::GetCurrentPmaCoreInstance($sessionID);
 print_r($mp);
 echo $newline;
 
+/* Example 600: rename slide */
+$slide = "_sys_ref/empty/2DollarBill.szi";
+$newName = "22DollarBill";
+echo "Renaming slide: ";
+$rs = CoreAdmin::RenameSlide($sessionID, $slide, $newName);
+print_r($rs);
+echo $newline;
+
+/* Example 610: delete slide */
+$slide = "_sys_ref/empty/22DollarBill.szi.szi";
+echo "Deleting slide: ";
+$rs = CoreAdmin::DeleteSlide($sessionID, $slide);
+print_r($rs);
+echo $newline;
 
 ?>

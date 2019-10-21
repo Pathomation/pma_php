@@ -286,8 +286,8 @@ class CoreAdmin {
         }
         
         $url = Core::_pma_url($AdmSessionID)."admin/json/CreateRootDirectory";
-		$currentInstanceId = CoreAdmin::GetCurrentInstance($AdmSessionID)["InstanceID"];
-		        
+        $currentInstanceId = CoreAdmin::GetCurrentInstance($AdmSessionID)["InstanceID"];
+        
         $jsonData = array(
         "sessionID" => $AdmSessionID,
         "rootDirectory"=> array(
@@ -296,10 +296,10 @@ class CoreAdmin {
         "Offline"=> $isOffline,
         "Public"=> $isPublic,
         "FileSystemMountingPoints" => array(array(
-        	"Path"=> $localpath,
-        	"InstanceId" => ($instanceID == 0 ? $currentInstanceId : $instanceID)
-        	))
-        	)
+        "Path"=> $localpath,
+        "InstanceId" => ($instanceID == 0 ? $currentInstanceId : $instanceID)
+        ))
+        )
         );
         
         $ret_val = PMA::_pma_send_post_request($url, $jsonData);
@@ -336,6 +336,39 @@ class CoreAdmin {
         "sessionID"=> $AdmSessionID,
         "usernames"=> array($pmacoreUsername),
         "rootDirectories"=> array($alias)
+        );
+        
+        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
+        return $ret_val;
+    }
+    
+    public static function RenameSlide($AdmSessionID, $slide, $newName) {
+        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support RenameSlide()");
+        }
+        
+        $url = Core::_pma_url($AdmSessionID)."admin/json/RenameSlide";
+        
+        $jsonData = array(
+        "sessionID"=> $AdmSessionID,
+        "path"=> $slide,
+        "newName"=> $newName
+        );
+        
+        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
+        return $ret_val;
+    }
+    
+    public static function DeleteSlide($AdmSessionID, $slide) {
+        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support DeleteSlide()");
+        }
+        
+        $url = Core::_pma_url($AdmSessionID)."admin/json/DeleteSlide";
+        
+        $jsonData = array(
+        "sessionID"=> $AdmSessionID,
+        "path"=> $slide
         );
         
         $ret_val = PMA::_pma_send_post_request($url, $jsonData);
