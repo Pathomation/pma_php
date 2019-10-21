@@ -118,7 +118,7 @@ class CoreAdmin {
         if (isset($json["d"])) {
             $json = $json["d"];
         }
-        
+
         return $json;
     }
     
@@ -137,12 +137,34 @@ class CoreAdmin {
         else if (!is_null($instances))
         {
             return $instances;
-		}
-		
+        }
+
         return null;
     }
     
-    
+    /**
+    Send out an email reminder to the address associated with user login
+    Returns true call to PMA.core was successful (doesn't guarantee an email was received!); false if not.
+    */
+    public static function SendEmailReminder($AdmSessionID, $login, $subject = "PMA.core password reminder") {
+        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support SendEmailReminder()");
+        }
+        
+        $url = Core::_pma_url($AdmSessionID)."admin/json/EmailPassword";
+        
+        $jsonData = [
+        "sessionID" => $AdmSessionID,
+        "username" => $login,
+        "subject" => $subject,
+        "messageTemplate" => ""
+        ];
+        
+        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
+
+        return true;
+    }
+
     /**
     Define a new user in PMA.core
     Returns true if user creation is successful; false if not.
