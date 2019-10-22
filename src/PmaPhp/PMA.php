@@ -11,8 +11,8 @@ namespace Pathomation\PmaPhp;
 Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
 */
 class PMA {
-	/** returns the current version of the library (2.0.0.68) */
-	const version = "2.0.0.68";
+	/** returns the current version of the library (2.0.0.69) */
+	const version = "2.0.0.69";
 
 	public static $_pma_debug = False;
 
