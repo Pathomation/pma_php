@@ -173,33 +173,27 @@ class CoreAdmin {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support AddUser()");
         }
+        $url = Core::_pma_url($AdmSessionID)."admin/json/CreateUser";
         
-        $url = Core::_pma_url($AdmSessionID)."admin?singleWsdl";
-        $client = new \SoapClient($url);
-        
-        try {
-            $client->CreateUser(
-            array(
+        $jsonData = [
             "sessionID" => $AdmSessionID,
             "user" => array(
-            "Administrator" => $isAdmin,
-            "CanAnnotate"   => $canAnnotate,
-            "Email"         => $email,
-            "FirstName"     => $firstName,
-            "LastName"      => $lastName,
-            "Local"         => true,
-            "Login"         => $login,
-            "Password"      => $password,
-            "Suspended"     => $isSuspended,
+                "Administrator" => $isAdmin,
+                "CanAnnotate"   => $canAnnotate,
+                "Email"         => $email,
+                "FirstName"     => $firstName,
+                "LastName"      => $lastName,
+                "Local"         => true,
+                "Login"         => $login,
+                "Password"      => $password,
+                "Suspended"     => $isSuspended,
             ),
-            )
-            );
-        } catch (\SoapFault $e) {
-            echo "\n<!-- Unable to create user -->\n";
-            return false;
-        }
-        return true;
+        ];
+        
+        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
+        return $ret_val;
     }
+
     public static function UserExists($AdmSessionID, $login) {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support UserExists()");

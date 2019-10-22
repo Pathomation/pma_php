@@ -55,6 +55,7 @@ $new_user = "user".rand();
 $new_pass = "pass".rand();
 
 $user = CoreAdmin::AddUser($sessionID, $new_user, "John", "Doe", $new_user."@doe.family", $new_pass);
+print_r($user);
 
 $new_session = Core::Connect($pma_core_server, $new_user, $new_pass);
 echo "SessionID obtained for $new_user : $new_session".PHP_EOL;

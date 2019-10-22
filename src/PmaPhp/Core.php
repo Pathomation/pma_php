@@ -120,11 +120,11 @@ class Core {
             $json = $json["d"];
         }
         
-        return $json == true; //return str(dom.firstChild.firstChild.nodeValue).lower() == "true";
+        return $json == true;
     }
     
     /** Internal use only */
-    private static function _pma_api_url($sessionID = None, $xml = false)
+    private static function _pma_api_url($sessionID = None)
     {
         // let's get the base URL first for the specified session
         $url = Core::_pma_url($sessionID);
