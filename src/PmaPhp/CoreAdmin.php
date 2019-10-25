@@ -368,4 +368,52 @@ class CoreAdmin {
         $ret_val = PMA::_pma_send_post_request($url, $jsonData);
         return $ret_val;
     }
+
+    public static function DeleteDirectory($AdmSessionID, $directory) {
+        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support DeleteDirectory()");
+        }
+        
+        $url = Core::_pma_url($AdmSessionID)."admin/json/DeleteDirectory";
+        
+        $jsonData = array(
+        "sessionID"=> $AdmSessionID,
+        "path"=> $directory
+        );
+        
+        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
+        return $ret_val;
+    }
+
+    public static function DeleteUser($AdmSessionID, $username) {
+        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support DeleteUser()");
+        }
+        
+        $url = Core::_pma_url($AdmSessionID)."admin/json/DeleteUser";
+        
+        $jsonData = array(
+        "sessionID"=> $AdmSessionID,
+        "login"=> $username
+        );
+        
+        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
+        return $ret_val;
+    }
+
+    public static function DeleteRootDirectory($AdmSessionID, $alias) {
+        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support DeleteRootDirectory()");
+        }
+        
+        $url = Core::_pma_url($AdmSessionID)."admin/json/DeleteRootDirectory";
+        
+        $jsonData = array(
+        "sessionID"=> $AdmSessionID,
+        "alias"=> $alias
+        );
+        
+        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
+        return $ret_val;
+    }
 }

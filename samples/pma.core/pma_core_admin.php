@@ -14,6 +14,7 @@ use Pathomation\PmaPhp\CoreAdmin;
 
 // connection parameters to be used throughout this notebook
 $pma_core_server = "https://host.pathomation.com/PMA.core.2";
+$pma_core_server = "http://localhost:51826/";
 $pma_core_user = "pma_admin"; //"user1";
 $pma_core_pass = "P4th0-M4t!on"; //"Pathomation";
 $pma_core_slide_dir = "hgx_cases";
@@ -74,8 +75,11 @@ echo $newline;
 
 echo $newline;
 
+
 /* Example 530: */
-echo "Example 530 reserved for future user interaction samples".$newline;
+echo "Example 530 delete user".$newline;
+echo "Delete user [. $new_user .] ";
+echo CoreAdmin::DeleteUser($sessionID, $new_user) === TRUE ? "Yes": "No";
 echo $newline;
 
 /* Example 540: */
