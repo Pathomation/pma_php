@@ -118,7 +118,7 @@ class CoreAdmin {
         if (isset($json["d"])) {
             $json = $json["d"];
         }
-
+        
         return $json;
     }
     
@@ -138,7 +138,7 @@ class CoreAdmin {
         {
             return $instances;
         }
-
+        
         return null;
     }
     
@@ -161,10 +161,10 @@ class CoreAdmin {
         ];
         
         $ret_val = PMA::_pma_send_post_request($url, $jsonData);
-
+        
         return true;
     }
-
+    
     /**
     Define a new user in PMA.core
     Returns true if user creation is successful; false if not.
@@ -176,24 +176,24 @@ class CoreAdmin {
         $url = Core::_pma_url($AdmSessionID)."admin/json/CreateUser";
         
         $jsonData = [
-            "sessionID" => $AdmSessionID,
-            "user" => array(
-                "Administrator" => $isAdmin,
-                "CanAnnotate"   => $canAnnotate,
-                "Email"         => $email,
-                "FirstName"     => $firstName,
-                "LastName"      => $lastName,
-                "Local"         => true,
-                "Login"         => $login,
-                "Password"      => $password,
-                "Suspended"     => $isSuspended,
-            ),
+        "sessionID" => $AdmSessionID,
+        "user" => array(
+        "Administrator" => $isAdmin,
+        "CanAnnotate"   => $canAnnotate,
+        "Email"         => $email,
+        "FirstName"     => $firstName,
+        "LastName"      => $lastName,
+        "Local"         => true,
+        "Login"         => $login,
+        "Password"      => $password,
+        "Suspended"     => $isSuspended,
+        ),
         ];
         
         $ret_val = PMA::_pma_send_post_request($url, $jsonData);
         return $ret_val;
     }
-
+    
     public static function UserExists($AdmSessionID, $login) {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support UserExists()");
@@ -251,6 +251,7 @@ class CoreAdmin {
         }
         
         $url = Core::_pma_url($AdmSessionID)."admin/json/CreateRootDirectory";
+        $currentInstanceId = CoreAdmin::GetCurrentInstance($AdmSessionID)["InstanceID"];
         
         $jsonData = [
         "sessionID" => $AdmSessionID,
@@ -266,7 +267,7 @@ class CoreAdmin {
         "AccessKey"=> $s3accessKey,
         "SecretKey"=> $s3secretKey,
         "Path"=> $s3path,
-        "InstanceId"=> $instanceID
+        "InstanceId"=> ($instanceID == 0 ? $currentInstanceId : $instanceID)
         ])]
         ];
         
@@ -368,7 +369,7 @@ class CoreAdmin {
         $ret_val = PMA::_pma_send_post_request($url, $jsonData);
         return $ret_val;
     }
-
+    
     public static function DeleteDirectory($AdmSessionID, $directory) {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support DeleteDirectory()");
@@ -384,7 +385,7 @@ class CoreAdmin {
         $ret_val = PMA::_pma_send_post_request($url, $jsonData);
         return $ret_val;
     }
-
+    
     public static function DeleteUser($AdmSessionID, $username) {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support DeleteUser()");
@@ -400,7 +401,7 @@ class CoreAdmin {
         $ret_val = PMA::_pma_send_post_request($url, $jsonData);
         return $ret_val;
     }
-
+    
     public static function DeleteRootDirectory($AdmSessionID, $alias) {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support DeleteRootDirectory()");
@@ -415,5 +416,30 @@ class CoreAdmin {
         
         $ret_val = PMA::_pma_send_post_request($url, $jsonData);
         return $ret_val;
+    }
+    
+    public static function GetRootDirectories($AdmSessionID, $aliasFilter = null) {
+        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support DeleteRootDirectory()");
+        }
+        
+        $url = Core::_pma_url($AdmSessionID)."admin/json/GetRootDirectories?sessionID=".PMA::_pma_q($AdmSessionID);
+        if (isset($aliasFilter)) {
+            $url .= "&aliasFilter=".PMA::_pma_q($aliasFilter);
+        }
+        
+        try {
+            $contents = @file_get_contents($url);
+        } catch (Exception $ex) {
+            throw new Exception("Unable to retrieve root-directories through $sessionID");
+            $contents = "";
+        }
+        
+        $json = json_decode($contents, true);
+        if (isset($json["d"])) {
+            $json = $json["d"];
+        }
+        
+        return $json;
     }
 }

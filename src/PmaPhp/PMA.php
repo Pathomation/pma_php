@@ -11,8 +11,8 @@ namespace Pathomation\PmaPhp;
 Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
 */
 class PMA {
-	/** returns the current version of the library (2.0.0.72) */
-	const version = "2.0.0.72";
+	/** returns the current version of the library (2.0.0.42) */
+	const version = "2.0.0.74";
 
 	public static $_pma_debug = False;
 
@@ -70,6 +70,7 @@ class PMA {
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Accept: application/json')); 
 		
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		//Execute the request
 		$result = curl_exec($ch);
 		
