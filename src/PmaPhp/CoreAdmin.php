@@ -93,6 +93,39 @@ class CoreAdmin {
         
         return $json;
     }
+
+    public static function GetUsers($admSessionID, $includeSuspendedUsers = FALSE, $path = NULL) {
+        if (Core::$_pma_pmacoreliteSessionID == $admSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support GetUsers()");
+        }
+        
+        $url = Core::_pma_url($admSessionID)."admin/json/GetUsers"
+        . "?sessionID=" . pma::_pma_q($admSessionID)
+        . "&includeSuspendedUsers=" . pma::_pma_q($includeSuspendedUsers ? "true" : "false");
+        
+        if (!is_null($path)) {
+            $url .= "&path=" . urlencode($path);
+        }
+        
+        try {
+            @$contents = file_get_contents($url);
+        } catch (Exception $e) {
+            // this happens when NO instance of PMA.core is detected
+            echo "Unable to fetch instances information";
+            return null;
+        }
+        
+        if (strlen($contents) < 1) {
+            return null;
+        }
+        
+        $json = json_decode($contents, true);
+        if (isset($json["d"])) {
+            $json = $json["d"];
+        }
+        
+        return $json;
+    }
     
     public static function GetInstances($admSessionID) {
         if (Core::$_pma_pmacoreliteSessionID == $admSessionID) {
