@@ -14,9 +14,9 @@ use Pathomation\PmaPhp\CoreAdmin;
 
 // connection parameters to be used throughout this notebook
 $pma_core_server = "https://host.pathomation.com/PMA.core.2";
-$pma_core_server = "http://localhost:51826/";
+// $pma_core_server = "http://localhost:51826/";
 $pma_core_user = "pma_admin"; //"user1";
-$pma_core_pass = "P4th0-M4t!on"; //"Pathomation";
+$pma_core_pass = "P4th0-M4t!on1"; //"Pathomation";
 $pma_core_slide_dir = "hgx_cases";
 
 $local_path = "";
@@ -42,6 +42,11 @@ PMA.core examples
 $sessionID = CoreAdmin::AdminConnect($pma_core_server, $pma_core_user, $pma_core_pass);
 echo "Administrative SessionID: ".$sessionID.$newline;
 echo $newline;
+
+
+
+echo CoreAdmin::ChangePassword($sessionID, $pma_core_pass, "P4th0-M4t!on");
+die();
 
 
 /* Example 010: GetInstances */

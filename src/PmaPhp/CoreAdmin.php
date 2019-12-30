@@ -164,6 +164,36 @@ class CoreAdmin {
         
         return true;
     }
+
+    public static function ChangePassword($AdmSessionID, $oldPassword, $newPassword) {
+        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support ChangePassword()");
+        }
+        
+        $url = Core::_pma_url($AdmSessionID)."admin/json/ChangePassword";
+        $url .= "?SessionID=" . pma::_pma_q($AdmSessionID);
+        $url .= "&oldpassword=" . pma::_pma_q($oldPassword);
+        $url .= "&newpassword=" . pma::_pma_q($newPassword);
+        
+        try {
+            @$contents = file_get_contents($url);
+        } catch (Exception $e) {
+            // this happens when NO instance of PMA.core is detected
+            echo "Unable to fetch instances information";
+            return null;
+        }
+        
+        if (strlen($contents) < 1) {
+            return null;
+        }
+        
+        $json = json_decode($contents, true);
+        if (isset($json["d"])) {
+            $json = $json["d"];
+        }
+        
+        return $json == TRUE;
+    }
     
     /**
     Define a new user in PMA.core
