@@ -58,6 +58,13 @@ class Core {
             }
         }
     }
+	
+	/**
+    returns the value of $_pma_pmacoreliteSessionID
+    */
+	public static function getPmacoreliteSessionID () {
+		return $_pma_pmacoreliteSessionID;
+	}
     
     public static function setDebugFlag($flag)
     {
@@ -560,7 +567,10 @@ class Core {
                 if (count($json) > 0) {
                     foreach ($json as $el) {
                         Core::$_pma_slideinfos[$sessionID][$el["Filename"]] = $el;
-                        Core::$_pma_slideinfos[$sessionID][$el["UID"]] = $el;
+						// UID is meaningless in PMA.start context
+						if ($sessionID != $_pma_pmacoreliteSessionID) {
+							Core::$_pma_slideinfos[$sessionID][$el["UID"]] = $el;
+						}
                     }
                 }
             }
