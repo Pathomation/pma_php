@@ -63,7 +63,7 @@ class Core {
     returns the value of $_pma_pmacoreliteSessionID
     */
 	public static function getPmacoreliteSessionID () {
-		return $_pma_pmacoreliteSessionID;
+		return Core::$_pma_pmacoreliteSessionID;
 	}
     
     public static function setDebugFlag($flag)
@@ -568,7 +568,7 @@ class Core {
                     foreach ($json as $el) {
                         Core::$_pma_slideinfos[$sessionID][$el["Filename"]] = $el;
 						// UID is meaningless in PMA.start context
-						if ($sessionID != $_pma_pmacoreliteSessionID) {
+						if ($sessionID != Core::$_pma_pmacoreliteSessionID) {
 							Core::$_pma_slideinfos[$sessionID][$el["UID"]] = $el;
 						}
                     }
