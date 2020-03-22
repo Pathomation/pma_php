@@ -751,6 +751,24 @@ class Core {
             return 0;
         }
     }
+
+    /**
+    Return the list of images type associated with a slide
+    */
+    public static function getAssociatedImageTypes($slideRef, $sessionID = null) {
+        $info = Core::getSlideInfo($slideRef, $sessionID);
+        if ($info == null) {
+            return null;
+        }
+        else {
+            if (array_key_exists("AssociatedImageTypes", $info)) {
+                return $info["AssociatedImageTypes"];
+            }
+            else {
+				return null;
+            }
+        }
+    }
     
     /**
     Get the URL that points to the barcode (alias for "label") for a slide
