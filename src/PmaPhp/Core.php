@@ -829,6 +829,109 @@ class Core {
         Core::$_pma_amount_of_data_downloaded[$sessionID] += strlen(serialize($img));
         return $img;
     }
+
+	/**
+	Get a composite thumbnail for any number of slides
+	The function results thumbnails for up to the first 4 slides in an array; if there are more than 4 slides, then a message is included in the resulting composite
+	*/	
+	public static function getCompositeThumbnailImage($width = 800, $height=600, $slides, $session) {
+		$canvas = imagecreate($width, $height);
+		switch (count($slides)) {
+			case 0: 
+				$white = imagecolorallocate($canvas, 255, 255, 255);
+				$textcolor = imagecolorallocate($canvas, 0, 0, 0);
+				imagestring($canvas, 5, $width/2, $height/2, 'No slides selected', $textcolor);
+				break;
+			case 1:
+				$t = Core::getThumbnailImage($slides[0], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, 0, 0, 0, 0, $width, $height, $thumb_w, $thumb_h);			
+				break;
+			case 2:
+				$black = imagecolorallocate($canvas, 0, 0, 0);
+				$t = Core::getThumbnailImage($slides[0], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, 0, 0, 0, 0, $width/2-2, $height, $thumb_w, $thumb_h);			
+
+				$t = Core::getThumbnailImage($slides[1], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, $width/2, 0, 0, 0, $width/2-2, $height, $thumb_w, $thumb_h);			
+				break;
+			case 3:
+				$black = imagecolorallocate($canvas, 0, 0, 0);
+				
+				$t = Core::getThumbnailImage($slides[0], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, 0, 0, 0, 0, $width/2-2, $height, $thumb_w, $thumb_h);			
+
+				$t = Core::getThumbnailImage($slides[1], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, $width/2, 0, 0, 0, $width/2-2, $height/2-2, $thumb_w, $thumb_h);			
+
+				$t = Core::getThumbnailImage($slides[2], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, $width/2, $height/2, 0, 0, $width/2-2, $height/2-2, $thumb_w, $thumb_h);			
+
+				break;
+			case 4:
+				$black = imagecolorallocate($canvas, 0, 0, 0);
+				
+				$t = Core::getThumbnailImage($slides[0], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, 0, 0, 0, 0, $width/2-2, $height/2-2, $thumb_w, $thumb_h);			
+
+				$t = Core::getThumbnailImage($slides[1], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, 0, $height/2, 0, 0, $width/2-2, $height/2-2, $thumb_w, $thumb_h);			
+
+				$t = Core::getThumbnailImage($slides[2], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, $width/2, 0, 0, 0, $width/2-2, $height/2-2, $thumb_w, $thumb_h);			
+
+				$t = Core::getThumbnailImage($slides[3], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, $width/2, $height/2, 0, 0, $width/2-2, $height/2-2, $thumb_w, $thumb_h);			
+
+				break;
+			default:
+				$black = imagecolorallocate($canvas, 0, 0, 0);
+
+				$textcolor = imagecolorallocate($canvas, 255, 255, 255);
+				imagestring($canvas, 5, 5, $height-30, "And ".(count($slides)-4)." more (".count($slides)." total)", $textcolor);
+
+				$t = Core::getThumbnailImage($slides[0], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, 0, 0, 0, 0, $width/2-2, $height/2-2-15, $thumb_w, $thumb_h);			
+
+				$t = Core::getThumbnailImage($slides[1], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, 0, $height/2-15, 0, 0, $width/2-2, $height/2-2-15, $thumb_w, $thumb_h);			
+
+				$t = Core::getThumbnailImage($slides[2], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, $width/2, 0, 0, 0, $width/2-2, $height/2-2-15, $thumb_w, $thumb_h);			
+
+				$t = Core::getThumbnailImage($slides[3], $session);
+				$thumb_w = imagesx($t);
+				$thumb_h = imagesy($t);
+				imagecopyresampled($canvas, $t, $width/2, $height/2-15, 0, 0, $width/2-2, $height/2-2-15, $thumb_w, $thumb_h);			
+
+		}
+		return $canvas;
+	}
     
     /**
     Obtain all files actually associated with a specific slide
