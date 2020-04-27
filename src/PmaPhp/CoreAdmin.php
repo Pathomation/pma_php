@@ -212,7 +212,7 @@ class CoreAdmin {
             @$contents = file_get_contents($url);
         } catch (Exception $e) {
             // this happens when NO instance of PMA.core is detected
-            echo "Unable to fetch instances information";
+            echo "Unable to change password";
             return null;
         }
         
@@ -226,6 +226,40 @@ class CoreAdmin {
         }
         
         return $json == TRUE;
+    }
+	
+	public static function ResetPassword($AdmSessionID, $username, $newPassword) {
+        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support ChangePassword()");
+        }
+        
+        $url = Core::_pma_url($AdmSessionID)."admin/json/ResetPassword";
+        $url .= "?SessionID=" . pma::_pma_q($AdmSessionID);
+        $url .= "&username=" . pma::_pma_q($username);
+        $url .= "&newpassword=" . pma::_pma_q($newPassword);
+        
+        try {
+            @$contents = file_get_contents($url);
+        } catch (Exception $e) {
+            // this happens when NO instance of PMA.core is detected
+            echo "Unable to reset password";
+            return null;
+        }
+        
+        if ($contents == "") {
+            return true;
+        }
+        
+        $json = json_decode($contents, true);
+        if (isset($json["d"])) {
+            $json = $json["d"];
+        }
+		
+		if (isset($json["Code"])) {
+            return null;
+        }
+        
+        return true;
     }
     
     /**
