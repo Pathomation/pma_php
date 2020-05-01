@@ -110,7 +110,7 @@ class Core {
         $contents = "";
         
         try {
-            @$contents = file_get_contents($url);
+            $contents = @file_get_contents($url);
         } catch (Exception $e) {
             // this happens when NO instance of PMA.core is detected
             echo "Unable to detect PMA.core(.lite)";
@@ -186,7 +186,7 @@ class Core {
         }
         $contents = "";
         try {
-            @$contents = file_get_contents($url);
+            $contents = @file_get_contents($url);
         } catch (Exception $e) {
             return null;
         }
@@ -210,7 +210,7 @@ class Core {
         }
         $contents = "";
         try {
-            @$contents = file_get_contents($url);
+            $contents = @file_get_contents($url);
         } catch (Exception $e) {
             return null;
         }
@@ -266,7 +266,7 @@ class Core {
         }
         
         try {
-            @$contents = file_get_contents($url);
+            $contents = @file_get_contents($url);
         } catch (Exception $e) {
             //	 Something went wrong; unable to communicate with specified endpoint
             return null;
@@ -354,7 +354,7 @@ class Core {
         if (Core::$_pma_debug === true) {
             echo $url.PHP_EOL;
         }
-        $contents = file_get_contents($url);
+        $contents = @file_get_contents($url);
         
         $json = json_decode($contents, true);
         if (isset($json["d"])) {
@@ -479,7 +479,7 @@ class Core {
         
         $url = Core::_pma_api_url($sessionID)."GetUID?sessionID=".PMA::_pma_q($sessionID)."&path=".PMA::_pma_q($slideRef);
         
-        $contents = file_get_contents($url);
+        $contents = @file_get_contents($url);
         
         $json = json_decode($contents, true);
         if (isset($json["d"])) {
@@ -504,7 +504,7 @@ class Core {
         $sessionID = Core::_pma_session_id($sessionID);
         $url = Core::_pma_api_url($sessionID)."GetFingerprint?sessionID=".PMA::_pma_q($sessionID)."&pathOrUid=".PMA::_pma_q($slideRef);
         
-        $contents= file_get_contents($url);
+        $contents = @file_get_contents($url);
         
         $json = json_decode($contents, true);
         if (isset($json["d"])) {
@@ -949,7 +949,7 @@ class Core {
             $url = Core::_pma_api_url($sessionID, False)."getfilenames?sessionID=".PMA::_pma_q($sessionID)."&pathOrUid=".PMA::_pma_q($slideRef);
         }
         
-        $contents= file_get_contents($url);
+        $contents = @file_get_contents($url);
         
         $json = json_decode($contents, true);
         if (isset($json["d"])) {
@@ -996,7 +996,7 @@ class Core {
         
         $url = Core::_pma_api_url($sessionID, False)."GetBarcodeText?sessionID=".PMA::_pma_q($sessionID)."&pathOrUid=".PMA::_pma_q($slideRef);
         
-        $contents = file_get_contents($url);
+        $contents = @file_get_contents($url);
         
         $json = json_decode($contents, true);
         if (isset($json["d"])) {
@@ -1107,7 +1107,7 @@ class Core {
             echo "url =" . $url;
         }
 
-        $contents= file_get_contents($url);
+        $contents = @file_get_contents($url);
         
         $json = json_decode($contents, true);
         if (isset($json["d"])) {

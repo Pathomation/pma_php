@@ -40,7 +40,7 @@ class Control {
 		$url = PMA::_pma_join($pmacontrolURL, "api/version");
 		$contents = "";
 		try {
-			@$contents = file_get_contents($url);
+			$contents = @file_get_contents($url);
 		} catch (Exception $e) {
 			return null;
 		}
@@ -59,7 +59,7 @@ class Control {
 	private static function _pma_get_training_sessions($pmacontrolURL, $pmacoreSessionID) {
 		$url = PMA::_pma_join($pmacontrolURL, "api/Sessions?sessionID=".PMA::_pma_q($pmacoreSessionID));
 		try {
-			@$r = file_get_contents($url);
+			$r = @file_get_contents($url);
 			// r = pma._pma_http_get(url, headers)
 		} catch (Exception $e) {
 			echo "Something went wrong; could not get $url\n";
