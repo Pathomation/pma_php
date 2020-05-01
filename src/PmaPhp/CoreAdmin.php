@@ -397,6 +397,19 @@ class CoreAdmin {
         $ret_val = PMA::_pma_send_post_request($url, $jsonData);
         return $ret_val;
     }
+	
+	public static function CreateDirectory($AdmSessionID, $path) {
+		if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support createDirectory()");
+        }
+		$url = Core::_pma_url($AdmSessionID)."admin/json/CreateDirectory";
+        $jsonData = array(
+			"sessionID" => $AdmSessionID,
+			"path" 	  	=> $path
+        );
+        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
+        return $ret_val;
+	}
     
     public static function GrantAccessToRootDirectory($AdmSessionID, $pmacoreUsername, $alias) {
         
