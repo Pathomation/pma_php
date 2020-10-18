@@ -291,6 +291,20 @@ class Core {
         }
         return $sessionID;
     }
+	
+	/**
+	Validates a sessionID
+	*/
+	public static function ping($pmacoreURL, $sessionID) {
+		$url = PMA::_pma_join($pmacoreURL, "/api/json/Ping") . "?sessionID=".PMA::_pma_q($sessionID);
+		$contents = "";
+        try {
+            $contents = @file_get_contents($url);
+			return $contents == true;
+        } catch (Exception $e) {
+            return false;
+        }
+	}
     
     /**
     Attempt to connect to PMA.core instance; success results in a SessionID
