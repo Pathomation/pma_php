@@ -300,7 +300,7 @@ class Core {
 		$contents = "";
         try {
             $contents = @file_get_contents($url);
-			return $contents == true;
+			return $contents == "true";
         } catch (Exception $e) {
             return false;
         }
