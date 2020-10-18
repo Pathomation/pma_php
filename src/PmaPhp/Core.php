@@ -98,6 +98,18 @@ class Core {
             }
         }
     }
+	
+	/**
+	Set pma_host for sessionID
+	*/
+	public static function storePmaHostForSessionID($pma_host, $sessionID) {
+		if (!isset(Core::$_pma_sessions[$sessionID])) {
+            Core::$_pma_sessions[$sessionID] = $pma_host;
+            Core::$_pma_usernames[$sessionID] = '';
+            Core::$_pma_slideinfos[$sessionID] = [];
+            Core::$_pma_amount_of_data_downloaded[$sessionID] = 0;
+		}
+	}
     
     /** Internal use only */
     private static function _pma_is_lite($pmacoreURL = null)
