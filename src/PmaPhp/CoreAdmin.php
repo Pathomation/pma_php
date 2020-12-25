@@ -547,7 +547,7 @@ class CoreAdmin {
     
     public static function GetRootDirectories($AdmSessionID, $aliasFilter = null) {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support DeleteRootDirectory()");
+            throw new \BadMethodCallException("PMA.start doesn't support GetRootDirectories()");
         }
         
         $url = Core::_pma_url($AdmSessionID)."admin/json/GetRootDirectories?sessionID=".PMA::_pma_q($AdmSessionID);
@@ -568,5 +568,27 @@ class CoreAdmin {
         }
         
         return $json;
+    }
+	
+    /**
+    Updates the quota on a root directory ($userQuota argument is in bytes)
+    */
+    public static function EditRootDirectoryUserQuota($AdmSessionID, $alias, $userQuota) {
+        $json = null;
+        try {
+            $json = CoreAdmin::GetRootDirectories($AdmSessionID, $alias);
+        } catch (Exception $e) {
+            throw new Exception("Failure to edit root directory user quota");
+        }
+        if ($json != null) {
+            $json[0]["Quota"] = $userQuota;
+            $url = Core::_pma_url($AdmSessionID)."admin/json/EditRootDirectory";
+            $jsonData = array(
+                "sessionID"=> $AdmSessionID,
+                "rootDirectory"=> $json[0]
+            );
+            $ret_val = PMA::_pma_send_post_request($url, $jsonData);
+            return $ret_val;
+        }
     }
 }
