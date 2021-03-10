@@ -11,8 +11,8 @@ namespace Pathomation\PmaPhp;
 Wrapper around PMA.UI JavaScript framework
 */
 class UI {
-	public static $_pma_start_ui_javascript_path = "http://localhost:54001/Scripts/pmaui/";
-	public static $_pma_ui_javascript_path = "pma.ui/";
+	public static $_pma_start_ui_javascript_path = "http://localhost:54001/js/pmaui/";
+	public static $_pma_ui_javascript_path = "pmaui/";
 	private static $_pma_ui_framework_embedded = false;
 	private static $_pma_ui_viewport_count = 0;
 	private static $_pma_ui_viewports = [];
@@ -28,11 +28,9 @@ class UI {
 				self::$_pma_ui_javascript_path .= "/";
 			}
 			echo "<!-- include PMA.UI script & css -->\n";
-			echo "<script src='".self::$_pma_ui_javascript_path."pma.ui.view.min.js' type='text/javascript'></script>\n";
-			echo "<link href='".self::$_pma_ui_javascript_path."pma.ui.view.min.css' type='text/css' rel='stylesheet'>\n";
-			echo "<!-- include PMA.UI.components script & css -->\n";
-			echo "<script src='".self::$_pma_ui_javascript_path."PMA.UI.components.all.min.js' type='text/javascript'></script>\n";
-			echo "<link href='".self::$_pma_ui_javascript_path."PMA.UI.components.all.min.css' type='text/css' rel='stylesheet'>\n";
+			
+			echo "<script src='".self::$_pma_ui_javascript_path."pma.ui.js' type='text/javascript'></script>\n";
+			echo "<link href='".self::$_pma_ui_javascript_path."pma.ui.css' type='text/css' rel='stylesheet'>\n";
 			echo "<script>var pma_ui_context = new PMA.UI.Components.Context({ caller: 'PMA.PHP UI class' });</script>";
 			self::$_pma_ui_framework_embedded = true;
 		}
