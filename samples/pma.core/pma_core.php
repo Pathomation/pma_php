@@ -12,9 +12,9 @@ use Pathomation\PmaPhp\Core;
 echo "pma_php library loaded; version " . Core::$__version__ . $newline;
 
 // connection parameters to be used throughout this notebook
-$pma_core_server = "https://host.pathomation.com/sandbox/2/PMA.core";
-$pma_core_user = "user2";
-$pma_core_pass = "Pathomation";
+$pma_core_server = "https://snapshot.pathomation.com/PMA.core_3.0.0.f47dcd30/";
+$pma_core_user = "pma_admin";
+$pma_core_pass = "P4th0-M4t!on";
 $pma_core_slide_dir = "hgx_cases/bladder/10440001B";
 
 if (!Core::isLite($pma_core_server)) {
@@ -26,6 +26,8 @@ if (!Core::isLite($pma_core_server)) {
 Core::setDebugFlag(true);
 echo $newline;
 
+echo Core::getVersionInfo($pma_core_server);
+die();
 
 /*
 PMA.core examples

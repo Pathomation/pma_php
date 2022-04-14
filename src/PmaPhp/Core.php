@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * @package Pathomation\PmaPhp
+ **/
+
+/**
 The file contains classes that wrap around various components of Pathomation's software platform for digital microscopy
 More information about Pathomation's free software offering can be found at http://free.pathomation.com
 Commercial applications and tools can be found at http://www.pathomation.com
@@ -211,6 +215,37 @@ class Core
             $json = $json["d"];
         }
 
+        if (substr($json, 0, strlen("3.0")) === "3.0") {
+            $revision = Core::getBuildRevision($pmacoreURL);
+            if (isset($revision)) {
+                $json .= "." . $revision;
+            }
+        }
+
+        return $json;
+    }
+
+    /**
+    Get build revision info from PMA.core instance running at $pmacoreURL
+     */
+    public static function getBuildRevision($pmacoreURL = null)
+    {
+        if ($pmacoreURL == null) {
+            $pmacoreURL = Core::$_pma_pmacoreliteURL;
+        }
+
+        $url = PMA::_pma_join($pmacoreURL, "api/json/GetBuildRevision");
+        if (Core::$_pma_debug == true) {
+            echo $url . PHP_EOL;
+        }
+        $contents = "";
+        try {
+            $contents = @file_get_contents($url);
+        } catch (Exception $e) {
+            return null;
+        }
+
+        $json = json_decode($contents, true);
         return $json;
     }
 
@@ -296,7 +331,7 @@ class Core
             $contents = $ret_val['resp'];
             $json = json_decode($ret_val['resp'], true);
         } catch (Exception $e) {
-            
+
             try {
                 $contents = @file_get_contents($url);
             } catch (Exception $e) {

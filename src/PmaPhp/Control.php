@@ -1,8 +1,11 @@
 <?php
 /**
-The file contains classes that wrap around various components of Pathomation's software platform for digital microscopy
-More information about Pathomation's free software offering can be found at http://free.pathomation.com
-Commercial applications and tools can be found at http://www.pathomation.com
+ * @package Pathomation\PmaPhp
+ **/
+/** 
+ * The file contains classes that wrap around various components of Pathomation's software platform for digital microscopy
+ * More information about Pathomation's free software offering can be found at http://free.pathomation.com
+ * Commercial applications and tools can be found at http://www.pathomation.com
 */
 
 namespace Pathomation\PmaPhp;

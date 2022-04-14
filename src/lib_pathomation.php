@@ -1,4 +1,8 @@
 <?php
+/**
+ * @package Pathomation\PmaPhp
+ */
+
 $folder = join(DIRECTORY_SEPARATOR, array(dirname(__FILE__), "PmaPhp"));
 
 if ((!is_dir($folder))) {
