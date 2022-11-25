@@ -28,6 +28,7 @@ class Core
     public static $_pma_pmacoreliteSessionID = "SDK.PHP";
     private static $_pma_usecachewhenretrievingtiles = true;
     private static $_pma_debug = false;
+    private static $_previous_downloaded = -1;
     public static $_pma_amount_of_data_downloaded = array("SDK.PHP" => 0);
 
 
@@ -173,6 +174,19 @@ class Core
         }
         // remember, _pma_url is guaranteed to return a URL that ends with "/"
         return PMA::_pma_join($url, "query/json/");
+    }
+
+    /** Internal use only */
+    private static function _pma_transfer_url($sessionID = None)
+    {
+        // let's get the base URL first for the specified session
+        $url = Core::_pma_url($sessionID);
+        if ($url == null) {
+            // sort of a hopeless situation; there is no URL to refer to
+            return null;
+        }
+        // remember, _pma_url is guaranteed to return a URL that ends with "/"
+        return PMA::_pma_join($url, "transfer/");
     }
 
     # end internal module helper variables and functions
@@ -1047,6 +1061,10 @@ class Core
             $url = Core::_pma_api_url($sessionID, False) . "getfilenames?sessionID=" . PMA::_pma_q($sessionID) . "&pathOrUid=" . PMA::_pma_q($slideRef);
         }
 
+        if (Core::$_pma_debug == true) {
+            echo "url = " . $url . "\n";
+        }
+
         $contents = @file_get_contents($url);
 
         $json = json_decode($contents, true);
@@ -1217,5 +1235,205 @@ class Core
         }
 
         return $files;
+    }
+
+    /*
+        Downloads a slide
+    */
+    public static function download($slide, $saveDirectory, $sessionID = null)
+    {
+        $sessionID = Core::_pma_session_id($sessionID);
+        $slide = ltrim($slide, "/");
+
+        $files = CORE::getFilesForSlide($slide, $sessionID);
+
+        if (empty($files)) {
+            throw new Exception("Slide not found" . "\n");
+            return;
+        }
+
+        $mainDirectory = substr($slide, 0, strripos($slide, "/"));
+
+        foreach ($files as $file) {
+            $f = $file["Path"];
+            $relativePath = str_replace($mainDirectory, "", $f);
+            $relativePath = trim($relativePath, '\\');
+            $relativePath = trim($relativePath, "/");
+            $pmaCoreDownloadUrl = Core::_pma_transfer_url($sessionID) . "Download";
+
+            if (Core::$_pma_debug == true) {
+                echo "Downloading file " . $relativePath  . " for slide " . $slide . "\n";
+            }
+
+            $params = array(
+                "sessionId" => $sessionID,
+                "image" => $slide,
+                "path" => $relativePath
+            );
+
+            $filePath = PMA::os_path_join($saveDirectory, $relativePath);
+
+            $dir = dirname($filePath);
+            if (!file_exists($dir)) {
+                mkdir($dir, 0777, true);
+            }
+
+            $fp = fopen($filePath, 'w');
+            $url = $pmaCoreDownloadUrl . "?" . http_build_query($params);
+            if (Core::$_pma_debug == true) {
+                echo $url . "\n";
+            }
+
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
+            curl_setopt($ch, CURLOPT_FILE, $fp);
+            curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+            curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, array('self', 'progress'));
+            CORE::$_previous_downloaded = -1;
+            $data = curl_exec($ch);
+
+            curl_close($ch);
+            fclose($fp);
+        }
+    }
+
+    /*
+        Upload a slide to a PMA.core server
+    */
+    public static function upload($localSlide, $targetFolder, $targetPmaCoresessionID)
+    {
+        if (!Core::_pma_is_lite()) {
+            throw new Exception("No PMA.start found on localhost. Are you sure it is running?");
+            return;
+        }
+
+        if (strpos($targetFolder, '/') === 0) {
+            $targetFolder = substr($targetFolder, 1);
+        }
+
+        $files = Core::getFilesForSlide($localSlide, Core::$_pma_pmacoreliteSessionID);
+        $url = Core::_pma_transfer_url($targetPmaCoresessionID) . "Upload?sessionID=" . PMA::_pma_q($targetPmaCoresessionID);
+
+        $mainDirectory = dirname($files[0]);
+        foreach ($files as $file) {
+            $md = dirname($file);
+            if (strlen($md) < strlen($mainDirectory)) {
+                $mainDirectory = $md;
+            }
+        }
+
+        $uploadFiles = array();
+        foreach ($files as $file) {
+            $s = filesize($file);
+            if (!$s) {
+                continue;
+            }
+
+            $relativePath = str_replace($mainDirectory, "", $file);
+            $relativePath = trim($relativePath, '\\');
+            $relativePath = trim($relativePath, "/");
+
+            array_push($uploadFiles, array(
+                "Path" => $relativePath,
+                "Length" => $s,
+                "IsMain" => $file == $files[count($files) - 1],
+                "FullPath" => $file
+            ));
+        }
+
+        $data = array("Path" => $targetFolder, "Files" => $uploadFiles);
+        $uploadHeaderResponse = PMA::_pma_send_post_request_with_statuscode($url, $data);
+
+        if (!$uploadHeaderResponse["statusCode"] == 200) {
+            throw new Exception("Error uploading to server" . $uploadHeaderResponse["resp"]);
+        }
+
+        $uploadHeader = json_decode($uploadHeaderResponse["resp"], true);
+
+        $pmaCoreUploadUrl = Core::_pma_transfer_url($targetPmaCoresessionID) . "Upload/" . $uploadHeader["Id"] . "?sessionID=" . PMA::_pma_q($targetPmaCoresessionID) . "&path={0}";
+        $i = 0;
+        foreach ($uploadFiles as $file) {
+            echo "Uploading file " . $file["Path"] . "\n";
+
+            $fields = [
+                'name' => new \CurlFile($file["FullPath"], 'application/octet-stream', basename($file["Path"]))
+            ];
+
+            $curl = curl_init();
+
+            $url = str_replace('{0}', $file["Path"], $pmaCoreUploadUrl);
+            $header = array('Content-Type: multipart/form-data', 'Content-Length: ' . $file["Length"]);
+            if ($uploadHeader["UploadType"] == 1) {
+                // Amazon upload
+                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+                $url = $uploadHeader["Urls"][$i];
+            } else if ($uploadHeader["UploadType"] == 2) {
+                //Azure upload
+                array_push($header, 'x-ms-blob-type: BlockBlob');
+                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+                $url = $uploadHeader["Urls"][$i];
+            } else {
+                curl_setopt($curl, CURLOPT_POST, true);
+            }
+
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $fields);
+            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($curl, CURLOPT_NOPROGRESS, false);
+            curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, array('self', 'progressUpload'));
+            CORE::$_previous_downloaded = -1;
+
+            $r = curl_exec($curl);
+            curl_close($curl);
+            $i += 1;
+        }
+
+        $finalizeUrl = Core::_pma_transfer_url($targetPmaCoresessionID) . "Upload/" . $uploadHeader["Id"] . "?sessionID=" . PMA::_pma_q($targetPmaCoresessionID);
+
+        $ch = curl_init($finalizeUrl);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Accept: application/json'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+
+        $result = curl_exec($ch);
+        $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if (curl_error($ch)) {
+            trigger_error('Curl Error:' . curl_error($ch));
+        }
+
+        curl_close($ch);
+
+        if ($statusCode < 200 || $statusCode >= 300) {
+            throw new Exception("Error uploading" . $result);
+        }
+    }
+
+    private static function progress($resource, $download_size, $downloaded, $upload_size, $uploaded)
+    {
+        $dl = -1;
+        if ($download_size > 0) {
+            $dl = round($downloaded / $download_size  * 100, 1);
+            if (CORE::$_previous_downloaded == -1 || ($dl - CORE::$_previous_downloaded) > 5 || (($dl - CORE::$_previous_downloaded) > 0 && $downloaded == $download_size)) {
+                echo  $dl . " %\n";
+                CORE::$_previous_downloaded = $dl;
+            }
+        }
+    }
+
+    private static function progressUpload($resource, $download_size, $downloaded, $upload_size, $uploaded)
+    {
+        $dl = -1;
+        if ($upload_size > 0) {
+            $dl = round($uploaded / $upload_size  * 100, 1);
+            if (CORE::$_previous_downloaded == -1 || ($dl - CORE::$_previous_downloaded) > 5 || (($dl - CORE::$_previous_downloaded) > 0 && $uploaded == $upload_size)) {
+                echo  $dl . " %\n";
+                CORE::$_previous_downloaded = $dl;
+            }
+        }
     }
 }

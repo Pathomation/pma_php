@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @package Pathomation\PmaPhp
  */
@@ -7,9 +8,11 @@
 The file contains classes that wrap around various components of Pathomation's software platform for digital microscopy
 More information about Pathomation's free software offering can be found at http://free.pathomation.com
 Commercial applications and tools can be found at http://www.pathomation.com
-*/
+ */
 
 namespace Pathomation\PmaPhp;
+
+use \Exception as Exception;
 
 /**
 Helper class. Developers should never access this class directly (but may recognize some helper functions they wrote themselves once upon a time)
@@ -17,7 +20,7 @@ Helper class. Developers should never access this class directly (but may recogn
 class PMA
 {
 	/** returns the current version of the library */
-	const version = "2.0.0.110";
+	const version = "2.0.0.111";
 
 	public static $_pma_debug = False;
 
@@ -113,5 +116,18 @@ class PMA
 			'statusCode' => $statusCode,
 			'resp' => $result
 		];
+	}
+
+	public static function  os_path_join(...$parts)
+	{
+		return preg_replace('#' . DIRECTORY_SEPARATOR . '+#', DIRECTORY_SEPARATOR, implode(DIRECTORY_SEPARATOR, array_filter($parts)));
+	}
+
+	public static function progress($resource, $download_size, $downloaded, $upload_size, $uploaded)
+	{
+		if ($download_size > 0)
+			echo $downloaded / $download_size  * 100;
+		ob_flush();
+		flush();
 	}
 }
