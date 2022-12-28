@@ -12,7 +12,7 @@ use Pathomation\PmaPhp\Core;
 echo "pma_php library loaded; version " . Core::$__version__ . $newline;
 
 // connection parameters to be used throughout this notebook
-$pma_core_server = "https://snapshot.pathomation.com/PMA.core_3.0.0.f47dcd30/";
+$pma_core_server = "https://devtest.pathomation.com/test/pma.core.3/"; #"https://snapshot.pathomation.com/PMA.core_3.0.0.f47dcd30/";
 $pma_core_user = "pma_admin";
 $pma_core_pass = "P4th0-M4t!on";
 $pma_core_slide_dir = "hgx_cases/bladder/10440001B";
@@ -26,7 +26,17 @@ if (!Core::isLite($pma_core_server)) {
 Core::setDebugFlag(true);
 echo $newline;
 
-echo Core::getVersionInfo($pma_core_server);
+echo Core::getVersionInfo($pma_core_server) . $newline;
+
+$sessionID = Core::Connect($pma_core_server, $pma_core_user, $pma_core_pass);
+if ($sessionID == null) {
+    echo "User [$pma_core_user] was unable to connect to PMA.core at specified location ($pma_core_server); password used = [$pma_core_pass]".PHP_EOL;
+} else {
+    echo "Successfully connected to PMA.core; sessionID = $sessionID";
+}
+echo $newline;
+
+Core::upload("G:\\WsiImages\\2DollarBill.szi", "_sys_azure", $sessionID);
 die();
 
 /*

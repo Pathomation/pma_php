@@ -20,6 +20,24 @@ Class that wraps around the free PMA.core.lite (the server component of PMA.star
 class Core
 {
     public static $__version__ = PMA::version;
+
+
+	public static $annotation_source_format_pathomation = 0;
+	public static $annotation_source_format_native = 1;
+	public static $annotation_source_format_visiopharm = 2;
+	public static $annotation_source_format_indicalabs = 3;
+	public static $annotation_source_format_aperio = 4;
+	public static $annotation_source_format_definiens = 4;
+	public static $annotation_source_format_xml = 4;
+
+	public static $annotation_target_format_pathomation = 2;
+	public static $annotation_target_format_visiopharm = 0;
+	public static $annotation_target_format_indicalabs = 1;
+	public static $annotation_target_format_aperio = 3;
+	public static $annotation_target_format_definiens = 3;
+	public static $annotation_target_format_xml = 3;
+	public static $annotation_target_format_csv = 4;
+
     # internal module helper variables and functions
     public static $_pma_sessions = [];
     public static $_pma_usernames = [];
@@ -1126,7 +1144,10 @@ class Core
         return $json;
     }
 
-    public static function whoAmI($sessionID = null)
+    /**
+		return information about the current user (associated with the PMA.core SessionID)
+	*/
+	public static function whoAmI($sessionID = null)
     {
         $sessionID = Core::_pma_session_id($sessionID);
         if ($sessionID == Core::$_pma_pmacoreliteSessionID) {
@@ -1146,8 +1167,8 @@ class Core
         }
     }
 
-    /*
-	    Get a single tile at position (x, y)
+    /**
+	    Built the URL for a single tile at position (x, y)
 	    Format can be 'jpg' or 'png'
 	    Quality is an integer value and varies from 0 (as much compression as possible; not recommended) to 100 (100%, no compression)
 	*/
@@ -1182,6 +1203,11 @@ class Core
         return $url;
     }
 
+	/**
+	    Get a single tile at position (x, y)
+		Format can be 'jpg' or 'png'
+		Quality is an integer value and varies from 0 (as much compression as possible; not recommended) to 100 (100%, no compression)
+	*/
     public static function getTile($slide, $x = 0, $y = 0, $zoomlevel = null, $zstack = 0, $sessionID = null, $format = "jpg", $quality = 100)
     {
         $url = Core::getTileUrl($slide, $x, $y, $zoomlevel, $zstack, $sessionID, $format, $quality);
@@ -1199,8 +1225,116 @@ class Core
         return $img;
     }
 
-    /*
-     Search for slides or directories using the pattern
+	public static function getRegionURL($slideRef, $x = 0, $y = 0, $width = 0, $height = 0, $scale = 1, $zstack = 0, $sessionID = null, $format = "jpg", $quality = 100, $rotation=0, $contrast = null, $brightness = null, $postGamma = null, $dpi = 300, $flipVertical = false, $flipHorizontal = false, $annotationsLayerType = null, $drawFilename = 0, $downloadInsteadOfDisplay = false, $drawScaleBar = false) {
+        $sessionID = Core::_pma_session_id($sessionID);
+        $slide = ltrim($slide, "/");
+
+        if (is_null($zoomlevel)) {
+            $zoomlevel = 0;
+        }
+
+        $url = Core::_pma_url($sessionID);
+
+        if (is_null($url)) {
+            throw new Exception("Unable to determine the PMA.core instance belonging to " . $sessionID);
+        }
+
+		$regionParams = array(
+				"sessionID" => $sessionId,
+				"channels" => 0,
+				"timeframe" => 0,
+				"layer" => 0,
+				"pathOrUid" => $path,
+				"x" => $x,
+				"y" => $y,
+				"width" => $width,
+				"height" => $height,
+				"scale" => $scale,
+				"format" => $format,
+				"quality" => $quality,
+				"rotation" => $rotation,
+				"drawFilename" => $drawFilename,
+				"drawScaleBar" => $drawScaleBar
+			);
+        
+        if (Core::$_pma_debug == true) {
+            echo "url =" . $url;
+        }
+
+        return $url;
+		
+	}
+	
+    public static function getRegion($slideRef, $x = 0, $y = 0, $width = 0, $height = 0, $scale = 1, $zstack = 0, $sessionID = null, $format = "jpg", $quality = 100, $rotation=0, $contrast = null, $brightness = null, $postGamma = null, $dpi = 300, $flipVertical = false, $flipHorizontal = false, $annotationsLayerType = null, $drawFilename = 0, $downloadInsteadOfDisplay = false, $drawScaleBar = false)
+    {
+
+        $url = Core::_pma_query_url($sessionID) . "Filename?sessionID=" . PMA::_pma_q($sessionID) . "&path=" . PMA::_pma_q($startDir) . "&pattern=" . PMA::_pma_q($pattern);
+        if (Core::$_pma_debug == true) {
+            echo "url =" . $url;
+        }
+
+
+        $url = Core::getRegionUrl($slideRef, $x, $y, $width, $height, $scale, $zstack, $sessionID, $format, $quality, $rotation, $contrast, $brightness, $postGamma, $dpi, $flipVertical, $flipHorizontal, $annotationsLayerType, $drawFilename, $downloadInsteadOfDisplay, $drawScaleBar);
+        if (is_null($url)) {
+            throw new Exception("Unable to determine the PMA.core instance belonging to " . $sessionID);
+        }
+
+        if (strtolower($format) == "png") {
+            $img = imagecreatefrompng($url);
+        } else {
+            $img = imagecreatefromjpeg($url);
+        }
+
+        Core::$_pma_amount_of_data_downloaded[$sessionID] += strlen(serialize($img));
+        return $img;
+    }
+
+	/**
+    Retrieve the annotations for slide slideRef
+    */
+    public static function getAnnotations($slideRef, $sessionID = null) {
+
+        $sessionID = Core::_pma_session_id($sessionID);
+        $url = Core::_pma_api_url($sessionID) . "GetAnnotations"
+			."?sessionID=" . PMA::_pma_q($sessionID) 
+			."&pathOrUid=" . PMA::_pma_q($slideRef);
+
+        if (Core::$_pma_debug == true) {
+            echo $url . PHP_EOL;
+        }
+
+        try {
+            $contents = @file_get_contents($url);
+        } catch (Exception $ex) {
+            throw new Exception("Unable to retrieve annotations through $sessionID");
+            $contents = "";
+        }
+
+        Core::$_pma_amount_of_data_downloaded[$sessionID] += strlen($contents);
+
+        $json = json_decode($contents, true);
+        if (isset($json["d"])) {
+            $json = $json["d"];
+        }
+
+        return $json;
+	}
+
+	/**
+	Retrieve one particular annotation, based on its ID
+	*/
+	public static function getAnnotationByID($slideref, $annID, $sessionID = null) {
+		$anns = Core::getAnnotations($slideref, $sessionID);
+		foreach ($anns as $ann) {
+			if ($ann["AnnotationID"] == $annID) {
+				return $ann;
+			}
+		}
+		return null;
+	}
+
+    /**
+		Search for slides or directories using the pattern
     */
     public static function searchSlides($startDir, $pattern, $sessionID = null)
     {
@@ -1237,7 +1371,7 @@ class Core
         return $files;
     }
 
-    /*
+    /**
         Downloads a slide
     */
     public static function download($slide, $saveDirectory, $sessionID = null)
@@ -1299,7 +1433,7 @@ class Core
         }
     }
 
-    /*
+    /**
         Upload a slide to a PMA.core server
     */
     public static function upload($localSlide, $targetFolder, $targetPmaCoresessionID)
@@ -1436,4 +1570,37 @@ class Core
             }
         }
     }
+	
+	/** 
+	Adds an anotation (in WKT format) to a slide with the specified parameters 
+	*/
+	public static function addAnnotation($slideRef, $classification, $notes, $geometry, $color = "#000000", $layerID = 0, $sessionID = null) {
+		
+        $sessionID = Core::_pma_session_id($sessionID);
+        $url = Core::_pma_api_url($sessionID)."AddAnnotation";
+    
+		$jsonData =  array(
+			"sessionID" => $sessionID,
+			"pathOrUid" => $slideRef,
+			"classification" => $classification,
+			"layerID" => $layerID,
+			"notes" => $notes,
+			"geometry" => $geometry,
+			"color" => $color
+		);
+
+        try {
+
+            $ret_val = PMA::_pma_send_post_request_with_statuscode($url, $jsonData);
+            if ($ret_val['statusCode'] != 200) {
+                throw new Exception("No post authentication request<br/>\n");
+            }
+
+            $contents = $ret_val['resp'];
+            $json = json_decode($ret_val['resp'], true);
+			return $json;
+        } catch (Exception $e) {
+			echo "Unable to add annotation<br/>\n";
+        }
+	}		
 }
