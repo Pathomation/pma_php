@@ -45,13 +45,13 @@ class Core
     public static $_pma_pmacoreliteURL = "http://localhost:54001/";
     public static $_pma_pmacoreliteSessionID = "SDK.PHP";
     private static $_pma_usecachewhenretrievingtiles = true;
-    private static $_pma_debug = false;
+    public static $_pma_debug = false;
     private static $_previous_downloaded = -1;
     public static $_pma_amount_of_data_downloaded = array("SDK.PHP" => 0);
 
 
     /** Internal use only */
-    private static function _pma_session_id($sessionID = null)
+    public static function _pma_session_id($sessionID = null)
     {
         if ($sessionID === null) {
             // if the sessionID isn't specified, maybe we can still recover it somehow
@@ -315,6 +315,12 @@ class Core
         return null;
     }
 
+	public static function registerSession($pmacoreURL, $sessionID) {
+            Core::$_pma_sessions[$sessionID] = $pmacoreURL;
+            Core::$_pma_usernames[$sessionID] = "";
+            Core::$_pma_slideinfos[$sessionID] = [];
+	}
+	
     /**
     Attempt to connect to PMA.core instance; success results in a SessionID
      */
@@ -1227,24 +1233,24 @@ class Core
 
 	public static function getRegionURL($slideRef, $x = 0, $y = 0, $width = 0, $height = 0, $scale = 1, $zstack = 0, $sessionID = null, $format = "jpg", $quality = 100, $rotation=0, $contrast = null, $brightness = null, $postGamma = null, $dpi = 300, $flipVertical = false, $flipHorizontal = false, $annotationsLayerType = null, $drawFilename = 0, $downloadInsteadOfDisplay = false, $drawScaleBar = false) {
         $sessionID = Core::_pma_session_id($sessionID);
-        $slide = ltrim($slide, "/");
+        $slideRef = ltrim($slideRef, "/");
 
-        if (is_null($zoomlevel)) {
+        /*if (is_null($zoomlevel)) {
             $zoomlevel = 0;
-        }
+        }*/
 
-        $url = Core::_pma_url($sessionID);
+        $url = Core::_pma_url($sessionID)."/Region?";
 
         if (is_null($url)) {
             throw new Exception("Unable to determine the PMA.core instance belonging to " . $sessionID);
         }
 
 		$regionParams = array(
-				"sessionID" => $sessionId,
+				"sessionID" => $sessionID,
 				"channels" => 0,
 				"timeframe" => 0,
 				"layer" => 0,
-				"pathOrUid" => $path,
+				"pathOrUid" => $slideRef,
 				"x" => $x,
 				"y" => $y,
 				"width" => $width,
@@ -1261,7 +1267,7 @@ class Core
             echo "url =" . $url;
         }
 
-        return $url;
+        return $url.http_build_query($regionParams);
 		
 	}
 	
@@ -1289,6 +1295,47 @@ class Core
         return $img;
     }
 
+    /**
+    See what forms are available to fill out, either system-wide (leave slideref to None), or for a particular slide
+    */
+	public static function getAvailableForms($slideref = null, $sessionID = null) {
+
+        $sessionID = Core::_pma_session_id($sessionID);
+        $url = Core::_pma_api_url($sessionID)."/GetForms?sessionID=".PMA::_pma_q($sessionID);
+
+/*
+    if (slideRef is not None):
+        if (slideRef.startswith("/")):
+            slideRef = slideRef[1:]
+        dir = os.path.split(slideRef)[0]
+        url = _pma_api_url(sessionID) + "GetForms?sessionID=" + pma._pma_q(sessionID) + "&path=" + pma._pma_q(dir)
+    else:
+        url = _pma_api_url(sessionID) + "GetForms?sessionID=" + pma._pma_q(sessionID)
+*/
+        if (Core::$_pma_debug == true) {
+            echo "url =" . $url;
+        }
+
+        $contents = @file_get_contents($url);
+
+        $json = json_decode($contents, true);
+        if (isset($json["d"])) {
+            $json = $json["d"];
+        }
+
+        Core::$_pma_amount_of_data_downloaded[$sessionID] += strlen($contents);
+
+		$forms = [];
+        if (isset($json["Code"])) {
+            throw new Exception("get_uid for $slideRef resulted in: " . $json["Message"] . " (keep in mind that slideRef is case sensitive!)");
+        } else {
+			foreach ($json as $formdef) {
+				$forms[$formdef["Key"]] = $formdef["Value"];
+			}
+        }
+        return $forms;
+	}
+	
 	/**
     Retrieve the annotations for slide slideRef
     */

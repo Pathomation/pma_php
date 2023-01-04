@@ -1,9 +1,5 @@
 <?php
 /**
- * @package Pathomation\PmaPhp
- **/
-
-/**
 The file contains classes that wrap around various components of Pathomation's software platform for digital microscopy
 More information about Pathomation's free software offering can be found at http://free.pathomation.com
 Commercial applications and tools can be found at http://www.pathomation.com
@@ -79,43 +75,10 @@ class CoreAdmin {
         . "?SessionID=" . pma::_pma_q($admSessionID);
         
         try {
-            $contents = @file_get_contents($url);
+            @$contents = file_get_contents($url);
         } catch (Exception $e) {
             // this happens when NO instance of PMA.core is detected
             echo "Unable to fetch license information";
-            return null;
-        }
-        
-        if (strlen($contents) < 1) {
-            return null;
-        }
-        
-        $json = json_decode($contents, true);
-        if (isset($json["d"])) {
-            $json = $json["d"];
-        }
-        
-        return $json;
-    }
-
-    public static function GetUsers($admSessionID, $includeSuspendedUsers = FALSE, $path = NULL) {
-        if (Core::$_pma_pmacoreliteSessionID == $admSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support GetUsers()");
-        }
-        
-        $url = Core::_pma_url($admSessionID)."admin/json/GetUsers"
-        . "?sessionID=" . pma::_pma_q($admSessionID)
-        . "&includeSuspendedUsers=" . pma::_pma_q($includeSuspendedUsers ? "true" : "false");
-        
-        if (!is_null($path)) {
-            $url .= "&path=" . urlencode($path);
-        }
-        
-        try {
-            $contents = @file_get_contents($url);
-        } catch (Exception $e) {
-            // this happens when NO instance of PMA.core is detected
-            echo "Unable to fetch instances information";
             return null;
         }
         
@@ -140,7 +103,7 @@ class CoreAdmin {
         . "?SessionID=" . pma::_pma_q($admSessionID);
         
         try {
-            $contents = @file_get_contents($url);
+            @$contents = file_get_contents($url);
         } catch (Exception $e) {
             // this happens when NO instance of PMA.core is detected
             echo "Unable to fetch instances information";
@@ -174,97 +137,11 @@ class CoreAdmin {
         else if (!is_null($instances))
         {
             return $instances;
-        }
-        
+		}
+		
         return null;
     }
     
-    /**
-    Send out an email reminder to the address associated with user login
-    Returns true call to PMA.core was successful (doesn't guarantee an email was received!); false if not.
-    */
-    public static function SendEmailReminder($AdmSessionID, $login, $subject = "PMA.core password reminder") {
-        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support SendEmailReminder()");
-        }
-        
-        $url = Core::_pma_url($AdmSessionID)."admin/json/EmailPassword";
-        
-        $jsonData = [
-        "sessionID" => $AdmSessionID,
-        "username" => $login,
-        "subject" => $subject,
-        "messageTemplate" => ""
-        ];
-        
-        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
-        
-        return true;
-    }
-
-    public static function ChangePassword($AdmSessionID, $oldPassword, $newPassword) {
-        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support ChangePassword()");
-        }
-        
-        $url = Core::_pma_url($AdmSessionID)."admin/json/ChangePassword";
-        $url .= "?SessionID=" . pma::_pma_q($AdmSessionID);
-        $url .= "&oldpassword=" . pma::_pma_q($oldPassword);
-        $url .= "&newpassword=" . pma::_pma_q($newPassword);
-        
-        try {
-            $contents = @file_get_contents($url);
-        } catch (Exception $e) {
-            // this happens when NO instance of PMA.core is detected
-            echo "Unable to change password";
-            return null;
-        }
-        
-        if (strlen($contents) < 1) {
-            return null;
-        }
-        
-        $json = json_decode($contents, true);
-        if (isset($json["d"])) {
-            $json = $json["d"];
-        }
-        
-        return $json == TRUE;
-    }
-	
-	public static function ResetPassword($AdmSessionID, $username, $newPassword) {
-        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support ChangePassword()");
-        }
-        
-        $url = Core::_pma_url($AdmSessionID)."admin/json/ResetPassword";
-        $url .= "?SessionID=" . pma::_pma_q($AdmSessionID);
-        $url .= "&username=" . pma::_pma_q($username);
-        $url .= "&newpassword=" . pma::_pma_q($newPassword);
-        
-        try {
-            $contents = @file_get_contents($url);
-        } catch (Exception $e) {
-            // this happens when NO instance of PMA.core is detected
-            echo "Unable to reset password";
-            return null;
-        }
-        
-        if (strlen($contents) < 1 && $contents !== "") {
-            return false;
-        }
-        
-        $json = json_decode($contents, true);
-        if (isset($json["d"])) {
-            $json = $json["d"];
-        }
-		
-		if (isset($json["Code"])) {
-            return null;
-        }
-        
-        return true;
-    }
     
     /**
     Define a new user in PMA.core
@@ -274,27 +151,33 @@ class CoreAdmin {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support AddUser()");
         }
-        $url = Core::_pma_url($AdmSessionID)."admin/json/CreateUser";
         
-        $jsonData = [
-        "sessionID" => $AdmSessionID,
-        "user" => array(
-        "Administrator" => $isAdmin,
-        "CanAnnotate"   => $canAnnotate,
-        "Email"         => $email,
-        "FirstName"     => $firstName,
-        "LastName"      => $lastName,
-        "Local"         => true,
-        "Login"         => $login,
-        "Password"      => $password,
-        "Suspended"     => $isSuspended,
-        ),
-        ];
+        $url = Core::_pma_url($AdmSessionID)."admin?singleWsdl";
+        $client = new \SoapClient($url);
         
-        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
-        return $ret_val;
+        try {
+            $client->CreateUser(
+            array(
+            "sessionID" => $AdmSessionID,
+            "user" => array(
+            "Administrator" => $isAdmin,
+            "CanAnnotate"   => $canAnnotate,
+            "Email"         => $email,
+            "FirstName"     => $firstName,
+            "LastName"      => $lastName,
+            "Local"         => true,
+            "Login"         => $login,
+            "Password"      => $password,
+            "Suspended"     => $isSuspended,
+            ),
+            )
+            );
+        } catch (\SoapFault $e) {
+            echo "\n<!-- Unable to create user -->\n";
+            return false;
+        }
+        return true;
     }
-    
     public static function UserExists($AdmSessionID, $login) {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support UserExists()");
@@ -352,7 +235,6 @@ class CoreAdmin {
         }
         
         $url = Core::_pma_url($AdmSessionID)."admin/json/CreateRootDirectory";
-        $currentInstanceId = CoreAdmin::GetCurrentInstance($AdmSessionID)["InstanceID"];
         
         $jsonData = [
         "sessionID" => $AdmSessionID,
@@ -368,7 +250,7 @@ class CoreAdmin {
         "AccessKey"=> $s3accessKey,
         "SecretKey"=> $s3secretKey,
         "Path"=> $s3path,
-        "InstanceId"=> ($instanceID == 0 ? $currentInstanceId : $instanceID)
+        "InstanceId"=> $instanceID
         ])]
         ];
         
@@ -382,8 +264,8 @@ class CoreAdmin {
         }
         
         $url = Core::_pma_url($AdmSessionID)."admin/json/CreateRootDirectory";
-        $currentInstanceId = CoreAdmin::GetCurrentInstance($AdmSessionID)["InstanceID"];
-        
+		$currentInstanceId = CoreAdmin::GetCurrentInstance($AdmSessionID)["InstanceID"];
+		        
         $jsonData = array(
         "sessionID" => $AdmSessionID,
         "rootDirectory"=> array(
@@ -392,28 +274,15 @@ class CoreAdmin {
         "Offline"=> $isOffline,
         "Public"=> $isPublic,
         "FileSystemMountingPoints" => array(array(
-        "Path"=> $localpath,
-        "InstanceId" => ($instanceID == 0 ? $currentInstanceId : $instanceID)
-        ))
-        )
+        	"Path"=> $localpath,
+        	"InstanceId" => ($instanceID == 0 ? $currentInstanceId : $instanceID)
+        	))
+        	)
         );
         
         $ret_val = PMA::_pma_send_post_request($url, $jsonData);
         return $ret_val;
     }
-	
-	public static function CreateDirectory($AdmSessionID, $path) {
-		if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support createDirectory()");
-        }
-		$url = Core::_pma_url($AdmSessionID)."admin/json/CreateDirectory";
-        $jsonData = array(
-			"sessionID" => $AdmSessionID,
-			"path" 	  	=> $path
-        );
-        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
-        return $ret_val;
-	}
     
     public static function GrantAccessToRootDirectory($AdmSessionID, $pmacoreUsername, $alias) {
         
@@ -450,149 +319,58 @@ class CoreAdmin {
         $ret_val = PMA::_pma_send_post_request($url, $jsonData);
         return $ret_val;
     }
-    
-    public static function RenameSlide($AdmSessionID, $slide, $newName) {
-        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support RenameSlide()");
+
+	/**
+	Create a new form; return Form ID
+	*/
+	public static function AddSimpleForm($name, $description = "", $fields = null, $sessionID = null) {
+        $AdmSessionID = Core::_pma_session_id($sessionID);
+        $url = Core::_pma_url($AdmSessionID)."admin/json/SaveFormDefinition";
+        if (Core::$_pma_debug === true) {
+            echo $url . PHP_EOL;
         }
-        
-        $url = Core::_pma_url($AdmSessionID)."admin/json/RenameSlide";
-        
-        $jsonData = array(
-        "sessionID"=> $AdmSessionID,
-        "path"=> $slide,
-        "newName"=> $newName
-        );
-        
-        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
-        return $ret_val;
-    }
-	
-	public static function MoveSlide($AdmSessionID, $slide, $newPath) {
-        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support RenameSlide()");
-        }
-        
-        $url = Core::_pma_url($AdmSessionID)."admin/json/MoveSlide";
-        
-        $jsonData = array(
-        "sessionID"=> $AdmSessionID,
-        "sourcePath"=> $slide,
-        "destinationPath"=> $newPath
-        );
-        
-        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
-        return $ret_val;
-    }
-    
-    public static function DeleteSlide($AdmSessionID, $slide) {
-        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support DeleteSlide()");
-        }
-        
-        $url = Core::_pma_url($AdmSessionID)."admin/json/DeleteSlide";
-        
-        $jsonData = array(
-        "sessionID"=> $AdmSessionID,
-        "path"=> $slide
-        );
-        
-        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
-        return $ret_val;
-    }
-    
-    public static function DeleteDirectory($AdmSessionID, $directory) {
-        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support DeleteDirectory()");
-        }
-        
-        $url = Core::_pma_url($AdmSessionID)."admin/json/DeleteDirectory";
-        
-        $jsonData = array(
-        "sessionID"=> $AdmSessionID,
-        "path"=> $directory
-        );
-        
-        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
-        return $ret_val;
-    }
-    
-    public static function DeleteUser($AdmSessionID, $username) {
-        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support DeleteUser()");
-        }
-        
-        $url = Core::_pma_url($AdmSessionID)."admin/json/DeleteUser";
-        
-        $jsonData = array(
-        "sessionID"=> $AdmSessionID,
-        "login"=> $username
-        );
-        
-        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
-        return $ret_val;
-    }
-    
-    public static function DeleteRootDirectory($AdmSessionID, $alias) {
-        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support DeleteRootDirectory()");
-        }
-        
-        $url = Core::_pma_url($AdmSessionID)."admin/json/DeleteRootDirectory";
-        
-        $jsonData = array(
-        "sessionID"=> $AdmSessionID,
-        "alias"=> $alias
-        );
-        
-        $ret_val = PMA::_pma_send_post_request($url, $jsonData);
-        return $ret_val;
-    }
-    
-    public static function GetRootDirectories($AdmSessionID, $aliasFilter = null) {
-        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
-            throw new \BadMethodCallException("PMA.start doesn't support GetRootDirectories()");
-        }
-        
-        $url = Core::_pma_url($AdmSessionID)."admin/json/GetRootDirectories?sessionID=".PMA::_pma_q($AdmSessionID);
-        if (isset($aliasFilter)) {
-            $url .= "&aliasFilter=".PMA::_pma_q($aliasFilter);
-        }
-        
-        try {
-            $contents = @file_get_contents($url);
-        } catch (Exception $ex) {
-            throw new Exception("Unable to retrieve root-directories through $sessionID");
-            $contents = "";
-        }
-        
-        $json = json_decode($contents, true);
-        if (isset($json["d"])) {
-            $json = $json["d"];
-        }
-        
-        return $json;
-    }
-	
-    /**
-    Updates the quota on a root directory ($userQuota argument is in bytes)
-    */
-    public static function EditRootDirectoryUserQuota($AdmSessionID, $alias, $userQuota) {
-        $json = null;
-        try {
-            $json = CoreAdmin::GetRootDirectories($AdmSessionID, $alias);
-        } catch (Exception $e) {
-            throw new Exception("Failure to edit root directory user quota");
-        }
-        if ($json != null) {
-            $json[0]["Quota"] = $userQuota;
-            $url = Core::_pma_url($AdmSessionID)."admin/json/EditRootDirectory";
-            $jsonData = array(
-                "sessionID"=> $AdmSessionID,
-                "rootDirectory"=> $json[0]
-            );
-            $ret_val = PMA::_pma_send_post_request($url, $jsonData);
-            return $ret_val;
-        }
-    }
+
+		$formFields = array();
+		if (!is_null($fields) && is_array($fields)) {
+			foreach ($fields as $field) {
+				array_push($formFields, array(
+					"AllowBelowDetectableLimit" => False,
+					"AllowOther" => False,
+					"DisplayOrder" => 0,
+					"FieldID" => 0,
+					"FieldType" => 0,
+					"FormList" => null,
+					"Label" => $field,
+					"LowerBound" => null,
+					"NewWindow" => False,
+					"Required" => False,
+					"UpperBound" => null,
+					"Url" => null
+				));			
+			}
+		}
+
+		print_r($formFields);
+		
+		$jsonData = array(
+			"sessionID" => $AdmSessionID,
+			"definition" => array(
+				"FormID" => 0,
+				"FormName" => $name,
+				"Description" => $description,
+				"Instructions" => "",
+				"PercentageSum" => False,
+				"Version" => 1,
+				"FormFields" => $formFields
+			));
+
+		echo "\n"; print_r($jsonData); echo "\n"; 
+
+		$ret_val = PMA::_pma_send_post_request($url, $jsonData);
+		echo "<pre>";
+		print_r($ret_val);
+		echo "</pre>";
+	}
+
 }
+
