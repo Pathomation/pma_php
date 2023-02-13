@@ -1070,6 +1070,35 @@ class Core
     }
 
     /**
+    Get the URL that points to the macro image for a slide (a low resolution image of the slide overview as well as the barcode; essentially )
+     */
+    public static function getMacroUrl($slideRef, $width = null, $height = null, $sessionID = null)
+    {
+        $sessionID = Core::_pma_session_id($sessionID);
+        $url = (Core::_pma_url($sessionID) . "macro"
+            . "?SessionID=" . pma::_pma_q($sessionID)
+            . "&pathOrUid=" . pma::_pma_q($slideRef));
+		if (!is_null($width) && is_int($width)) {
+			$url .= "&w=".$width;			
+		}
+		if (!is_null($height) && is_int($height)) {
+			$url .= "&h=".$height;			
+		}
+        return $url;
+    }
+
+    /**
+    Get the macro image for a slide
+     */
+    public static function getMacroImage($slideRef, $width = null, $height = null, $sessionID = null)
+    {
+        $sessionID = Core::_pma_session_id($sessionID);
+        $img = imagecreatefromjpeg(Core::getThumbnailUrl($slideRef, $width, $height, $sessionID));
+        Core::$_pma_amount_of_data_downloaded[$sessionID] += strlen(serialize($img));
+        return $img;
+    }
+
+    /**
     Obtain all files actually associated with a specific slide
     This is most relevant with slides that are defined by multiple files, like MRXS or VSI
      */
