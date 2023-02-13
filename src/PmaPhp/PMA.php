@@ -20,7 +20,7 @@ Helper class. Developers should never access this class directly (but may recogn
 class PMA
 {
 	/** returns the current version of the library */
-	const version = "2.0.0.116";
+	const version = "2.0.0.115";
 
 	public static $_pma_debug = False;
 
