@@ -468,7 +468,7 @@ class Core
     /**
     Return an array of sub-directories available to $sessionID in the $startDir directory
      */
-    public static function getDirectories($startDir, $sessionID = null)
+    public static function getDirectories($startDir, $sessionID = null, $recursive = False)
     {
         $sessionID = Core::_pma_session_id($sessionID);
         $url = Core::_pma_api_url($sessionID) . "GetDirectories?sessionID=" . PMA::_pma_q($sessionID) . "&path=" . PMA::_pma_q($startDir);
@@ -476,6 +476,11 @@ class Core
             echo $url . PHP_EOL;
         }
         $contents = @file_get_contents($url);
+
+        if (Core::$_pma_debug === true) {
+            echo "<pre>".$contents . "</pre><br>" . PHP_EOL;
+        }
+
 
         $json = json_decode($contents, true);
         if (isset($json["d"])) {
@@ -487,6 +492,18 @@ class Core
         if (isset($json["Code"])) {
             throw new Exception("get_directories to $startDir resulted in: " . $json["Message"] . " (keep in mind that startDir is case sensitive!)");
         }
+
+        // handle recursion, if so desired
+        if ( (is_bool($recursive) && $recursive == True) || (is_numeric($recursive) && $recursive > 0) ) {
+            //echo "RECURSION DETECTED!<br>";
+            foreach (Core::getDirectories($startDir, $sessionID) as $dir) {
+                if (is_bool($recursive))
+                    $json = $json + Core::getDirectories($dir, $sessionID, $recursive);
+                elseif (is_numeric($recursive))
+                    $json = $json + Core::getDirectories($dir, $sessionID, $recursive - 1);
+            }
+        }
+
         return $json;
     }
 
