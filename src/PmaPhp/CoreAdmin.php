@@ -16,7 +16,7 @@ class CoreAdmin {
     Attempt to connect to PMA.core instance; success results in a SessionID
     only success if the user has administrative status
     */
-    public static function AdminConnect($pmacoreURL, $pmacoreAdmUsername, $pmacoreAdmPassword){
+    public static function adminConnect($pmacoreURL, $pmacoreAdmUsername, $pmacoreAdmPassword){
         if ($pmacoreURL == Core::$_pma_pmacoreliteURL) {
             if (Core::is_lite()) {
                 throw new \BadMethodCallException("PMA.core.lite found running, but doesn't support an administrative back-end");
@@ -62,11 +62,11 @@ class CoreAdmin {
     /**
     Attempt to disconnect from PMA.core instance; True if valid admSessionID was indeed disconnected
     */
-    public static function AdminDisconnect($admSessionID) {
+    public static function adminDisconnect($admSessionID) {
         return Core::disconnect($admSessionID);
     }
     
-    public static function GetLicenseInfo($admSessionID) {
+    public static function getLicenseInfo($admSessionID) {
         if (Core::$_pma_pmacoreliteSessionID == $admSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support GetLicenseInfo()");
         }
@@ -94,7 +94,7 @@ class CoreAdmin {
         return $json;
     }
     
-    public static function GetInstances($admSessionID) {
+    public static function getInstances($admSessionID) {
         if (Core::$_pma_pmacoreliteSessionID == $admSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support GetInstances()");
         }
@@ -122,7 +122,7 @@ class CoreAdmin {
         return $json;
     }
     
-    public static function GetCurrentInstance($admSessionID) {
+    public static function getCurrentInstance($admSessionID) {
         $instances = CoreAdmin::GetInstances($admSessionID);
         if (is_array($instances))
         {
@@ -147,7 +147,7 @@ class CoreAdmin {
     Define a new user in PMA.core
     Returns true if user creation is successful; false if not.
     */
-    public static function AddUser($AdmSessionID, $login, $firstName, $lastName, $email, $password, $canAnnotate = false, $isAdmin = false, $isSuspended = false) {
+    public static function addUser($AdmSessionID, $login, $firstName, $lastName, $email, $password, $canAnnotate = false, $isAdmin = false, $isSuspended = false) {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support AddUser()");
         }
@@ -198,7 +198,7 @@ class CoreAdmin {
         return count($json) > 0;
     }
     
-    function GetPmaCoreInstances($AdmSessionID) {
+    function getPmaCoreInstances($AdmSessionID) {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support GetMountingPoints()");
         }
@@ -215,7 +215,7 @@ class CoreAdmin {
         
         return $obj;
     }
-    function GetCurrentPmaCoreInstance($AdmSessionID) {
+    function getCurrentPmaCoreInstance($AdmSessionID) {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support GetCurrentMountingPoint()");
         }
@@ -229,7 +229,7 @@ class CoreAdmin {
         return null;
     }
     
-    public static function AddS3RootDirectory($AdmSessionID, $s3accessKey, $s3secretKey, $alias, $s3path, $instanceID, $description = "Root dir created through lib_php", $isPublic = False, $isOffline = False) {
+    public static function addS3RootDirectory($AdmSessionID, $s3accessKey, $s3secretKey, $alias, $s3path, $instanceID, $description = "Root dir created through lib_php", $isPublic = False, $isOffline = False) {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support AddS3RootDirectory()");
         }
@@ -258,7 +258,7 @@ class CoreAdmin {
         return $ret_val;
     }
     
-    public static function AddLocalRootDirectory($AdmSessionID, $alias, $localpath, $description = "Root dir created through lib_php", $instanceID = 0, $isPublic = False, $isOffline = False) {
+    public static function addLocalRootDirectory($AdmSessionID, $alias, $localpath, $description = "Root dir created through lib_php", $instanceID = 0, $isPublic = False, $isOffline = False) {
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support AddLocalRootDirectory()");
         }
@@ -284,7 +284,7 @@ class CoreAdmin {
         return $ret_val;
     }
     
-    public static function GrantAccessToRootDirectory($AdmSessionID, $pmacoreUsername, $alias) {
+    public static function grantAccessToRootDirectory($AdmSessionID, $pmacoreUsername, $alias) {
         
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support GrantAccessToRootDirectory()");
@@ -302,7 +302,7 @@ class CoreAdmin {
         return $ret_val;
     }
     
-    public static function DenyAccessToRootDirectory($AdmSessionID, $pmacoreUsername, $alias) {
+    public static function denyAccessToRootDirectory($AdmSessionID, $pmacoreUsername, $alias) {
         
         if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
             throw new \BadMethodCallException("PMA.start doesn't support DenyAccessToRootDirectory()");
@@ -323,7 +323,7 @@ class CoreAdmin {
 	/**
 	Create a new form; return Form ID
 	*/
-	public static function AddSimpleForm($name, $description = "", $fields = null, $sessionID = null) {
+	public static function addSimpleForm($name, $description = "", $fields = null, $sessionID = null) {
         $AdmSessionID = Core::_pma_session_id($sessionID);
         $url = Core::_pma_url($AdmSessionID)."admin/json/SaveFormDefinition";
         if (Core::$_pma_debug === true) {
@@ -372,5 +372,71 @@ class CoreAdmin {
 		echo "</pre>";
 	}
 
-}
 
+    /**
+    lookup the reverse path of a UID for a specific slide
+    */
+    public static function reverseUid($admSessionID, $slideRefUid) {
+        if (Core::$_pma_pmacoreliteSessionID == $AdmSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support DenyAccessToRootDirectory()");
+        }
+
+        $url = Core::_pma_url($AdmSessionID)."admin/json/ReverseLookupUID?sessionID=".PMA::_pma_q($AdmSessionID)."&uid=".PMA::_pma_q($slideRefUid);
+
+        $json = @file_get_contents($url);
+        if ($json == "") 
+            return null;
+        else
+            return $json;
+
+        /*
+        if (pma._pma_debug is True):
+            print(url)
+        r = requests.get(url)
+        json = r.json()
+        if ("Code" in json):
+            raise Exception("reverse_uid on  " + slideRefUid + " resulted in: " + json["Message"])
+        else:
+            path = json
+    */
+    }
+    
+    /**
+    lookup the reverse path of a root-directory
+    */
+    public static function reverseRootDirectory($admSessionID, $alias) {
+        if (Core::$_pma_pmacoreliteSessionID == $admSessionID) {
+            throw new \BadMethodCallException("PMA.start doesn't support DenyAccessToRootDirectory()");
+        }
+
+        $url = Core::_pma_url($admSessionID)."admin/json/ReverseLookupRootDirectory?sessionID=".PMA::_pma_q($admSessionID)."&alias=".PMA::_pma_q($alias);
+
+        $json = @file_get_contents($url);
+        if ($json == "") 
+            return null;
+        else 
+            return json_decode($json);
+        /*
+        url = _pma_admin_url($admSessionID) + "ReverseLookupRootDirectory?sessionID=" + pma._pma_q($admSessionID) + "&alias=" + pma._pma_q($alias)
+        if (pma._pma_debug is True):
+            print(url)
+        r = requests.get(url)
+        json = r.json()
+        if ("Code" in json):
+            raise Exception("reverse_root_directory on  " + alias + " resulted in: " + json["Message"])
+        else:
+            path = json
+    
+        */
+    }
+
+    public static function getReversedRootDirectories($admSessionID) {
+        $map = [];
+        foreach (Core::getRootDirectories() as $rd) {
+            $path = CoreAdmin::reverseRootDirectory($admSessionID, $rd);
+            if ($path != null && strlen(trim($path)) > 0)
+                $map[$rd] = $path;
+        }
+        return $map;
+    }
+}

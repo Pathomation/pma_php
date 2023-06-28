@@ -1366,6 +1366,36 @@ class Core
 	}
 	
 	/**
+	Get a list of attached external annotation files (Visiopharm MLD, Indica Labs ANNOTATION...)
+	*/
+	public static function getAnnotationFiles($slideRef, $sessionID = null) {
+        $sessionID = Core::_pma_session_id($sessionID);
+        $url = Core::_pma_api_url($sessionID) . "GetExternalAnnotationFiles"
+			."?sessionID=" . PMA::_pma_q($sessionID) 
+			."&pathOrUid=" . PMA::_pma_q($slideRef);
+
+        if (Core::$_pma_debug == true) {
+            echo $url . PHP_EOL;
+        }
+
+        try {
+            $contents = @file_get_contents($url);
+        } catch (Exception $ex) {
+            throw new Exception("Unable to retrieve annotations through $sessionID");
+            $contents = "";
+        }
+
+        Core::$_pma_amount_of_data_downloaded[$sessionID] += strlen($contents);
+
+        $json = json_decode($contents, true);
+        if (isset($json["d"])) {
+            $json = $json["d"];
+        }
+
+        return $json;
+	}
+	
+	/**
     Retrieve the annotations for slide slideRef
     */
     public static function getAnnotations($slideRef, $sessionID = null) {
@@ -1678,5 +1708,107 @@ class Core
         } catch (Exception $e) {
 			echo "Unable to add annotation<br/>\n";
         }
-	}		
+	}
+
+    public static function addAnnotationFile($slideRef, $annotationFileRef, $sessionID = null) {
+
+        $sessionID = Core::_pma_session_id($sessionID);
+
+		$annParams = array(
+            "sessionID" => $sessionID,
+            "pathOrUid" => $slideRef
+        );
+
+        $url = Core::_pma_api_url($sessionID)."SetExternalAnnotationFiles?".http_build_query($annParams);        
+
+        $jsonData = [];
+        $currentAnns = Core::getAnnotationFiles($slideRef);
+        foreach ($currentAnns as $currentAnn) {
+            if ($currentAnn["Path"] != $annotationFileRef)
+                array_push($jsonData, $currentAnn);            
+        }
+
+        array_push($jsonData,
+                    ["Name" => "Sliani ".sprintf('%06d', mt_rand(100000, 999989)),
+                     "Path" => $annotationFileRef]);
+
+        // echo "<br>$url<br>\n";
+        // echo "<pre>"; print_r($jsonData); echo "</pre>";
+
+        try {
+
+            $ret_val = PMA::_pma_send_post_request_with_statuscode($url, $jsonData);
+            // echo "HTTP statuscode: ".$ret_val['statusCode']."<br>";
+            if ($ret_val['statusCode'] == 404) {
+                throw new Exception("Endpoint <tt>$url</tt> not found<br/>\n");                
+            } elseif ($ret_val['statusCode'] != 200) {
+                echo "<pre>"; print_r($ret_val); echo "</pre>"; 
+                throw new Exception("No post authentication request (status ".$ret_val['statusCode']." received)<br/>\n");                
+            }
+
+            $contents = $ret_val['resp'];
+            $json = json_decode($ret_val['resp'], true);
+			return $json;
+        } catch (Exception $e) {
+			echo "Unable to attach $annotationFileRef to $slideRef<br/>\n";
+            echo "<pre>"; print_r($e); echo "</pre>"; 
+        }
+
+    }
+
+    public static function detachAnnotationFile($slideRef, $annotationFileRef, $sessionID = null) {
+
+        $sessionID = Core::_pma_session_id($sessionID);
+
+		$annParams = array(
+            "sessionID" => $sessionID,
+            "pathOrUid" => $slideRef
+        );
+
+        $url = Core::_pma_api_url($sessionID)."SetExternalAnnotationFiles?".http_build_query($annParams);        
+
+        $currentAnns = Core::getAnnotationFiles($slideRef);
+
+        /*echo "<pre><b>Original annotation files:</b><br>\n";
+        print_r($currentAnns);
+        echo "</pre>";
+        */
+        $jsonData = [];
+
+        foreach ($currentAnns as $currentAnn) {
+            if ($currentAnn["Path"] != $annotationFileRef) {
+                array_push($jsonData, $currentAnn); 
+            }
+        }
+        
+        /*echo "<pre><b>Updated annotation files:</b><br>\n";
+        print_r($jsonData);
+        echo "</pre>";
+        */
+        if (count($jsonData) == count($currentAnns)) {
+            echo "No change; nothing to do; existing function";
+            return;            
+        }
+
+        try {
+
+            $ret_val = PMA::_pma_send_post_request_with_statuscode($url, $jsonData);
+            echo "HTTP statuscode: ".$ret_val['statusCode']."<br>";
+            if ($ret_val['statusCode'] == 404) {
+                throw new Exception("Endpoint <tt>$url</tt> not found<br/>\n");                
+            } elseif ($ret_val['statusCode'] != 200) {
+                echo "<pre>"; print_r($ret_val); echo "</pre>"; 
+                throw new Exception("No post authentication request (status ".$ret_val['statusCode']." received)<br/>\n");                
+            }
+
+            $contents = $ret_val['resp'];
+            $json = json_decode($ret_val['resp'], true);
+			return $json;
+        } catch (Exception $e) {
+			echo "Unable to attach $annotationFileRef to $slideRef<br/>\n";
+            echo "<pre>"; print_r($e); echo "</pre>"; 
+        }
+
+    }
+
 }
